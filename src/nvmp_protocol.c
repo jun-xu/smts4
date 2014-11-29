@@ -174,6 +174,7 @@ PROTOCOL_MAP(GEN_STRUCT_BUFS_ALLOC, GEN_STRUCT_ARGS_ALLOC, GEN_STRUCT_3ARGS_ALLO
 #define GEN_STRUCT_ENCODE(cmd_name,packet_opt,pcmd,fileds,_fun)		\
 int cmd_name##_t_encode(cmd_name##_t *t){							\
 	int offset = 0,is_new=1;										\
+	int r = cmd_name##_t_bufs_alloc(t);								\
 	uv_buf_t *packet = t->original_buf;								\
 	char *buf;														\
 	t->packet_len = cmd_name##_t_len(t) - packet_opt;				\
@@ -221,121 +222,5 @@ int cmd_name##_t_destroy(cmd_name##_t *t){										\
 }
 
 PROTOCOL_MAP(GEN_STRUCT_DESTROY, GEN_STRUCT_ARGS_DESTROY, GEN_STRUCT_3ARGS_DESTROY);
-
-
-
-/**
- * abstract methods.
- */
-//
-//#define GEN_PROTO_CMD_CASE_ARG(_type,_name)
-//#define GEN_PROTO_CMD_CASE_ARG3(_type,_name,_)
-//#define GEN_PROTO_CMD_INIT(cmd_name,_packet,cmd,fileds,_fun)					\
-//case cmd:																		\
-//	cmd_name##_t_init((cmd_name##_t*)cmd_t);										\
-//	break;																		\
-//
-//int proto_cmd_init(abstract_cmd_t *cmd_t){
-//	int r = 0;
-//	switch(cmd_t->cmd){
-//			PROTOCOL_MAP(GEN_PROTO_CMD_INIT, GEN_PROTO_CMD_CASE_ARG, GEN_PROTO_CMD_CASE_ARG3);
-//		default:
-//			CL_ERROR("no init fun to call of cmd:%d\n",cmd_t->cmd);
-//			r = -1;
-//	}
-//	return r;
-//}
-//
-//#define GEN_PROTO_CMD_LEN(cmd_name,_packet,cmd,fileds,_fun)						\
-//case cmd:																		\
-//	cmd_name##_t_len((cmd_name##_t*)cmd_t);										\
-//	break;																		\
-//
-//int proto_cmd_len(abstract_cmd_t *cmd_t){
-//	int r = 0;
-//	switch((cmd_t)->cmd){
-//			PROTOCOL_MAP(GEN_PROTO_CMD_LEN, GEN_PROTO_CMD_CASE_ARG, GEN_PROTO_CMD_CASE_ARG3);
-//		default:
-//			CL_ERROR("no len fun to call of cmd:%d\n",(cmd_t)->cmd);
-//			r = -1;
-//	}
-//	return r;
-//}
-//
-//#define GEN_PROTO_CMD_BUFS_ALLOC(cmd_name,_packet,cmd,fileds,_fun)						\
-//case cmd:																				\
-//	cmd_name##_t_bufs_alloc((cmd_name##_t*)cmd_t);										\
-//	break;
-//
-//int proto_cmd_bufs_alloc(abstract_cmd_t *cmd_t)
-//{
-//	int r = 0;
-//	switch((cmd_t)->cmd){
-//			PROTOCOL_MAP(GEN_PROTO_CMD_BUFS_ALLOC, GEN_PROTO_CMD_CASE_ARG, GEN_PROTO_CMD_CASE_ARG3);
-//		default:
-//			CL_ERROR("no alloc fun to call of cmd:%d\n",(cmd_t)->cmd);
-//			r = -1;
-//	}
-//	return r;
-//
-//}
-//
-//#define GEN_PROTO_CMD_DECODE(cmd_name,_packet,cmd,fileds,_fun)						\
-//case cmd:																			\
-//	cmd_name##_t_decode(packet,(cmd_name##_t*)cmd_t);										\
-//	break;
-//
-//int proto_cmd_decode(uv_buf_t *packet,abstract_cmd_t *cmd_t)
-//{
-//	int r = 0;
-//	switch((cmd_t)->cmd){
-//			PROTOCOL_MAP(GEN_PROTO_CMD_DECODE, GEN_PROTO_CMD_CASE_ARG, GEN_PROTO_CMD_CASE_ARG3);
-//		default:
-//			CL_ERROR("no decode fun to call of cmd:%d\n",(cmd_t)->cmd);
-//			r = -1;
-//	}
-//	return r;
-//}
-//
-//#define GEN_PROTO_CMD_ENCODE(cmd_name,_packet,cmd,fileds,_fun)						\
-//case cmd:																			\
-//	cmd_name##_t_encode((cmd_name##_t*)cmd_t);										\
-//	break;
-//
-//int proto_cmd_encode(abstract_cmd_t *cmd_t)
-//{
-//	int r = 0;
-//	switch((cmd_t)->cmd){
-//			PROTOCOL_MAP(GEN_PROTO_CMD_ENCODE, GEN_PROTO_CMD_CASE_ARG, GEN_PROTO_CMD_CASE_ARG3);
-//		default:
-//			CL_ERROR("no encode fun to call of cmd:%d\n",(cmd)->cmd);
-//			r = -1;
-//	}
-//	return r;
-//}
-//
-//#define GEN_PROTO_CMD_DESTROY(cmd_name,_packet,cmd,fileds,_fun)						\
-//case cmd:																			\
-//	cmd_name##_t_destroy((cmd_name##_t*)cmd);										\
-//	break;
-//
-//int proto_cmd_destroy(abstract_cmd_t *cmd)
-//{
-//	int r = 0;
-//	switch((cmd)->cmd){
-//			PROTOCOL_MAP(GEN_PROTO_CMD_DESTROY, GEN_PROTO_CMD_CASE_ARG, GEN_PROTO_CMD_CASE_ARG3);
-//		default:
-//			CL_ERROR("no destroy fun to call of cmd:%d\n",(cmd)->cmd);
-//			r = -1;
-//	}
-//	return r;
-//}
-
-
-
-
-
-
-
 
 

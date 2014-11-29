@@ -47,21 +47,11 @@ PROTOCOL_MAP(GEN_STRUCT, GEN_STRUCT_FILED, GEN_STRUCT_3FILED);
 #define GEN_STRUCT_METHOD(cmd_name,_packet,cmd,fileds,_fun)		\
 int cmd_name##_t_init(cmd_name##_t *t);							\
 int cmd_name##_t_len(cmd_name##_t *t);							\
-int cmd_name##_t_bufs_alloc(cmd_name##_t *t);					\
 int cmd_name##_t_decode(uv_buf_t *packet,cmd_name##_t *t);		\
 int cmd_name##_t_encode(cmd_name##_t *t);						\
 int cmd_name##_t_destroy(cmd_name##_t *t);						\
 
 PROTOCOL_MAP(GEN_STRUCT_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
-
-
-//int proto_cmd_init(abstract_cmd_t *cmd);
-//int proto_cmd_len(abstract_cmd_t *cmd);
-//int proto_cmd_bufs_alloc(abstract_cmd_t *cmd);
-//int proto_cmd_decode(uv_buf_t *packet,abstract_cmd_t *cmd);
-//int proto_cmd_encode(abstract_cmd_t *cmd);
-//int proto_cmd_destroy(abstract_cmd_t *cmd);
-
 
 
 #define PACKET_INVALID -1

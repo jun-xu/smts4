@@ -100,7 +100,7 @@ void smts_client_send_preview_res(smts_client_t *client, int status)
 		preview_res->brightness = 0;
 		preview_res->contrast = 0;
 		preview_res->saturation = 0;
-		preview_cmd_res_t_bufs_alloc(preview_res);
+//		preview_cmd_res_t_bufs_alloc(preview_res);
 		preview_cmd_res_t_encode(preview_res);
 		client->status = SMTS_CLIENT_ON_SEND_PREVIEW_RES; // to avoid repeat send preview response
 		r = tcp_client_send_msg((abstract_tcp_client_t*) client, (abstract_cmd_t*) preview_res,
@@ -177,7 +177,6 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 		preview_res->brightness = 0;
 		preview_res->contrast = 0;
 		preview_res->saturation = 0;
-		preview_cmd_res_t_bufs_alloc(preview_res);
 		preview_cmd_res_t_encode(preview_res);
 		r = tcp_client_send_msg((abstract_tcp_client_t*) aclient, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_error_preview_res_cb);

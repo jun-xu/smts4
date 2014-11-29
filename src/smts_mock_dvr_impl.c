@@ -114,7 +114,6 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 	preview_packet->bitrate = DEFAULT_DVR_BITRATE;
 	preview_packet->frame_rate = DEFAULT_DVR_FRAMERATE;
 
-	r = mock_dvr_preview_t_bufs_alloc(preview_packet);
 	r = mock_dvr_preview_t_encode(preview_packet);
 	/// 3. send preview msg.
 	r = tcp_client_send_msg((abstract_tcp_client_t*) dvr_client, (abstract_cmd_t*) preview_packet,

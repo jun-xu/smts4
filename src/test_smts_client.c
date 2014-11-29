@@ -104,7 +104,7 @@ static void test_client_on_connected(abstract_tcp_client_t *aclient, int status)
 	req->frame_mode = 7;
 	req->packet_len = preview_cmd_t_len(req);
 // alloc send bufs;
-	assert(0 == preview_cmd_t_bufs_alloc(req));
+//	assert(0 == preview_cmd_t_bufs_alloc(req));
 // encode packet
 	assert(0 == preview_cmd_t_encode(req));
 	assert(0 == tcp_client_send_msg(aclient, (abstract_cmd_t* ) req, test_client_on_send_preview_cmd));
@@ -143,7 +143,6 @@ void test_struct_encode_decode_suite()
 	req->packet_len = len;
 
 	assert(0 == preview_cmd_t_init(req0));
-	assert(0 == preview_cmd_t_bufs_alloc(req));
 	assert(0 == preview_cmd_t_encode(req));
 	assert(1 == req->original_buf_len);
 	packet = req->original_buf;

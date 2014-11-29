@@ -140,7 +140,6 @@ static void dvr_send_frame0(uv_timer_t* handle)
 		frame->frame.len = dvr->frame_bin.len;
 	}
 	frame->st = dvr->seqno * dvr->interval;
-	assert(0 == mock_dvr_frame_t_bufs_alloc(frame));
 	assert(0 == mock_dvr_frame_t_encode(frame));
 	r = tcp_client_send_msg((abstract_tcp_client_t*) dvr, (abstract_cmd_t*) frame, on_mock_dvr_send_frame_cb);
 	if (r != 0) {
