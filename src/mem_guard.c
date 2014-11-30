@@ -26,9 +26,12 @@ typedef struct
 } malloc_entity;
 
 static malloc_pool pool = { 0 };
+static uv_mutex_t mem_mutex;
+
 void init_mem_guard()
 {
 	QUEUE_INIT(&pool.entity);
+	uv_mutex_init(&mem_mutex);
 }
 
 void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
@@ -41,7 +44,9 @@ void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
 	e->s = s;
 	void *ptr = malloc(s);
 	e->ptr = ptr;
+	uv_mutex_lock(&mem_mutex);
 	QUEUE_INSERT_HEAD(&pool.entity, &e->q);
+	uv_mutex_unlock(&mem_mutex);
 //	printf("malloc %s.%d.%s:%p\n",file,line,fun,ptr);
 	return ptr;
 }
@@ -50,6 +55,7 @@ void free_guard(void *ptr)
 {
 	QUEUE *q;
 	malloc_entity *c = NULL;
+	uv_mutex_lock(&mem_mutex);
 	QUEUE_FOREACH(q,&pool.entity)
 	{
 		c = QUEUE_DATA(q, malloc_entity, q);
@@ -57,11 +63,14 @@ void free_guard(void *ptr)
 			break;
 		}
 	}
+	uv_mutex_unlock(&mem_mutex);
 	free(ptr);
 	if (c == NULL) {
 		CL_DEBUG("ptr:%p not guard.\n", ptr);
 	} else {
+		uv_mutex_lock(&mem_mutex);
 		QUEUE_REMOVE(&c->q);
+		uv_mutex_unlock(&mem_mutex);
 		free(c);
 	}
 
