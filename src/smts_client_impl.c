@@ -39,7 +39,7 @@ int stop_smts_client(smts_client_t *c, int status)
 			c->status = SMTS_CLIENT_ON_STOP;
 			CL_INFO("stop smts_client fd:%d,status:%d.\n", c->socket.io_watcher.fd, status);
 			if (c->session != NULL) {
-				smts_client_stop_preview(c->session, c);
+				media_client_stop_preview(c->session, c);
 			}
 			close_abstract_tcp_client((abstract_tcp_client_t*) c, socket_close_cb);
 		}
@@ -105,8 +105,8 @@ void smts_client_send_preview_res(smts_client_t *client, int status)
 		client->status = SMTS_CLIENT_ON_SEND_PREVIEW_RES; // to avoid repeat send preview response
 		r = tcp_client_send_msg((abstract_tcp_client_t*) client, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_preview_res_cb_slient);
-		if(r != 0){
-			CL_ERROR("send preview res error:%d,%s.\n",r,smts_strerror(r));
+		if (r != 0) {
+			CL_ERROR("send preview res error:%d,%s.\n", r, smts_strerror(r));
 			preview_cmd_res_t_destroy(preview_res);
 			//TODO: send error;
 		}
@@ -168,7 +168,7 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 	play.channel_no = play_cmd->channel_no;
 	play.frame_mode = play_cmd->frame_mode;
 	CL_DEBUG("dispatch preview play cmd:{%lld,%d,%d}.\n", play.dvr_id, play.channel_no, play.frame_mode);
-	r = smts_start_preview(client, &play);
+	r = media_client_start_preview(client, &play);
 	if (r != 0) {
 		CL_ERROR("start preview error:%d,%s\n", r, smts_strerror(r));
 		preview_cmd_res_t *preview_res = (preview_cmd_res_t*) malloc(sizeof(preview_cmd_res_t));
@@ -182,7 +182,6 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 		r = tcp_client_send_msg((abstract_tcp_client_t*) aclient, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_error_preview_res_cb);
 	}
-
 	return r;
 }
 

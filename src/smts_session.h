@@ -68,14 +68,14 @@ typedef struct smts_frame_s
  * @param play {@link play_cmd_t}
  * @return 0:ok. other:errorcode
  */
-int smts_start_preview(smts_client_t* client, play_cmd_t *play);
+int media_client_start_preview(smts_client_t* client, play_cmd_t *play);
 /**
  * smts client stop preview.
  * @param client {@link smts_client_t}
  * @param s {@link smts_session_t} preview session.
  * @return 0:ok. other:errorcode
  */
-int smts_client_stop_preview(smts_session_t *s, smts_client_t* client);
+int media_client_stop_preview(smts_session_t *s, smts_client_t* client);
 /**
  * init smts session.
  * @param s {@link smts_session_t} smts session.
@@ -85,9 +85,9 @@ int smts_client_stop_preview(smts_session_t *s, smts_client_t* client);
  * @param frame_mod  0 or 1.
  * @return 0:ok.  other:errorcode
  */
-int init_smts_session(smts_session_t *s, uv_loop_t *loop, int64_t dvr_id, int16_t channel_no, int32_t frame_mode);
+int init_media_session(smts_session_t *s, uv_loop_t *loop, int64_t dvr_id, int16_t channel_no, int32_t frame_mode);
 
-int stop_smts_session(smts_session_t *s);
+int stop_media_session(smts_session_t *s);
 /**
  * private. destory smts session.
  * @param s {@link smts_session_t} smts session.

@@ -37,7 +37,7 @@ static int add_smts_client(smts_session_t *s, smts_client_t *client)
 	return 0;
 }
 
-int stop_smts_session(smts_session_t *s)
+int stop_media_session(smts_session_t *s)
 {
 	QUEUE *q;
 	delete_session((abstract_session_t*) s);
@@ -80,7 +80,7 @@ static void wait_exit_session(smts_session_t *s)
 	uv_timer_start(&s->wait_exit_timer, session_exit_cb, SESSION_WAIT_EXIT_TIMEOUT, 0);
 }
 
-int smts_client_stop_preview(smts_session_t *s, smts_client_t* client)
+int media_client_stop_preview(smts_session_t *s, smts_client_t* client)
 {
 	// exit.1.1 client stop.
 	CL_DEBUG("client preview stop,fd:%d.\n", client->socket.io_watcher.fd);
@@ -105,7 +105,7 @@ void on_connected_to_dvr(smts_session_t* s, abstract_tcp_client_t *client, int s
 		CL_ERROR("connect to dvr:%d error:%d,%s.\n", client->socket.io_watcher.fd, status, smts_strerror(status));
 		r = DVR_CONNECT_REFUSED_ERROR;
 		s->exit_code = r;
-		stop_smts_session(s);
+		stop_media_session(s);
 	} else {
 		CL_DEBUG("connect to dvr.[ok].\n");
 		r = smts_dvr_client_preview(&s->dvr);
@@ -113,7 +113,7 @@ void on_connected_to_dvr(smts_session_t* s, abstract_tcp_client_t *client, int s
 			//exit.2.3 send preview cmd to dvr error;
 			r = DVR_SEND_PRIVIEW_CMD_ERROR;
 			s->exit_code = r;
-			stop_smts_session(s);
+			stop_media_session(s);
 		}
 	}
 
@@ -137,7 +137,7 @@ void on_smts_dvr_client_recv_frame(smts_session_t* s, smts_frame_t *frame, int s
 	if (status != 0) {
 		CL_ERROR("recv frame error:%d,%s\n", status, smts_strerror(status));
 		s->exit_code = status;
-		stop_smts_session(s);
+		stop_media_session(s);
 		return;
 	}
 
@@ -173,7 +173,7 @@ void on_smts_dvr_client_send_preview(smts_session_t* s, abstract_tcp_client_t *c
 		CL_ERROR("send dvr preview cmd error:%d,%s\n", status, smts_strerror(status));
 		//exit.2.3 send preview cmd to dvr error;
 		s->exit_code = status;
-		stop_smts_session(s);
+		stop_media_session(s);
 		return;
 	}
 	if (s->client_size > 0) {
@@ -188,13 +188,13 @@ void on_smts_dvr_client_send_preview(smts_session_t* s, abstract_tcp_client_t *c
 	if (status != 0) {
 		CL_ERROR("send dvr preview cmd error:%d,%s\n", status, smts_strerror(status));
 		s->exit_code = status;
-		stop_smts_session(s);
+		stop_media_session(s);
 		return;
 	}
 
 }
 
-int smts_start_preview(smts_client_t* client, play_cmd_t *play)
+int media_client_start_preview(smts_client_t* client, play_cmd_t *play)
 {
 	int r = 0;
 	session_key_t key = { 0 };
@@ -209,7 +209,7 @@ int smts_start_preview(smts_client_t* client, play_cmd_t *play)
 	if (s == NULL) {
 		// new smts session.
 		s = (smts_session_t*) malloc(sizeof(smts_session_t));
-		init_smts_session(s, client->loop, play->dvr_id, play->channel_no, play->frame_mode);
+		init_media_session(s, client->loop, play->dvr_id, play->channel_no, play->frame_mode);
 
 		CL_DEBUG("create new session:%s\n", s->name);
 		// preview.2. add smts client to session.
@@ -256,16 +256,16 @@ int smts_start_preview(smts_client_t* client, play_cmd_t *play)
 	return r;
 }
 
-int init_smts_session(smts_session_t *s, uv_loop_t *loop, int64_t dvr_id, int16_t channel_no, int32_t frame_mode)
+int init_media_session(smts_session_t *s, uv_loop_t *loop, int64_t dvr_id, int16_t channel_no, int32_t frame_mode)
 {
+	init_abstract_session((abstract_session_t*) s);
 	s->loop = loop;
-	memset(&s->key, 0, sizeof(session_key_t));
 	uv_timer_init(loop, &s->wait_exit_timer);
 	s->wait_exit_timer.data = s;
 	s->exit_code = SMTS_OK;
 	s->key.type = SESSION_TYPE_SMTS;
 	QUEUE_INIT(&s->client);
-	s->next = NULL;
+
 	s->client_size = 0;
 	s->key.dvr_id = dvr_id;
 	s->key.channel_no = channel_no;

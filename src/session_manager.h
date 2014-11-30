@@ -9,13 +9,15 @@
 #define SESSION_MANAGER_H_
 
 #include "smts_abstract_session.h"
+#include "queue.h"
 
 typedef struct session_manager_s
 {
-	abstract_session_t *head;
-	abstract_session_t *tail;
+	QUEUE head;
 	int32_t size;
 } session_manager_t;
+
+void init_session_manager();
 
 /**
  * compare to keys

@@ -44,7 +44,6 @@ int main(int argc, char* argv[])
 	uv_run(&loop, UV_RUN_DEFAULT);
 	destroy_tcp_server(tcp_server);
 #endif
-
 	return 0;
 }
 

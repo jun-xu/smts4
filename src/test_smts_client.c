@@ -14,6 +14,7 @@
 #include "encode_decode_util.h"
 #include "test_mock_dvr.h"
 #include "smts_client_impl.h"
+#include "session_manager.h"
 #include <assert.h>
 
 /**
@@ -169,8 +170,8 @@ static uv_timer_t timer;
 static smts_tcp_server_t *tcp_server = NULL;
 static smts_tcp_server_t *dvr_tcp_server = NULL;
 #define WAIT_TO_EXIT_TIMEOUT 2000
-static int repert = 2;
-#define TEST_CLIENT_SIZE 10
+static int repert = 1;
+#define TEST_CLIENT_SIZE 1
 
 #ifdef MEM_GUARD
 static void printf_mem_info(uv_timer_t *t) {
@@ -236,6 +237,7 @@ void start_smts_server()
 
 void test_preview_suite()
 {
+	init_session_manager();
 	uv_thread_t thread_t;
 	uv_thread_create(&thread_t, start_mock_dvr_server, NULL);
 	Sleep(1000);
