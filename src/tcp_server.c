@@ -88,7 +88,8 @@ static void server_socket_close_cb(uv_handle_t* handle)
 		tcp_server->stop_cb();
 	}
 	CL_INFO("stop tcp server [ok].\n");
-	FREE(tcp_server);
+	tcp_server->status = TCP_SERVER_STATUS_INIT;
+//	FREE(tcp_server);
 }
 int stop_tcp_server(smts_tcp_server_t *tcp_server, start_stop_cb cb)
 {
@@ -110,13 +111,10 @@ int stop_tcp_server(smts_tcp_server_t *tcp_server, start_stop_cb cb)
 int destroy_tcp_server(smts_tcp_server_t *tcp_server)
 {
 	int r = 0;
-	if (tcp_server->status == TCP_SERVER_STATUS_UNINIT)
-		return 0;
-	if (tcp_server->status != TCP_SERVER_STATUS_INIT) {
-		CL_ERROR("tcp server status(%d) error.\n", tcp_server->status);
+	if (tcp_server->status == TCP_SERVER_STATUS_RUNNING) {
+		CL_ERROR("destroy tcp server error, should be stop first!\n");
 		return -1;
 	}
-
 	CL_INFO("destroy tcp server.\n");
 	FREE(tcp_server);
 	return 0;
