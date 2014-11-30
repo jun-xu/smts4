@@ -166,9 +166,11 @@ void test_struct_encode_decode_suite()
 static uv_loop_t loop;
 static uv_loop_t dvr_loop;
 static uv_timer_t timer;
-
-static int repert = 1;
-#define TEST_CLIENT_SIZE 1
+static smts_tcp_server_t *tcp_server = NULL;
+static smts_tcp_server_t *dvr_tcp_server = NULL;
+#define WAIT_TO_EXIT_TIMEOUT 2000
+static int repert = 2;
+#define TEST_CLIENT_SIZE 10
 
 #ifdef MEM_GUARD
 static void printf_mem_info(uv_timer_t *t) {
@@ -183,13 +185,13 @@ static void smts_client_start_new(uv_timer_t *t)
 		return;
 	for (i = 0; i < TEST_CLIENT_SIZE; i++) {
 		test_smts_client_t *test_client = (test_smts_client_t*) malloc(sizeof(test_smts_client_t));
-		assert(0 == test_smts_start_preivew(&loop, test_client, 0));
+		assert(0 == test_smts_start_preivew(&loop, test_client, i / 2));
 	}
 	if (--repert > 0) {
-		uv_timer_start(&timer, smts_client_start_new, 5000, 0);
+		uv_timer_start(&timer, smts_client_start_new, WAIT_TO_EXIT_TIMEOUT, 0);
 	} else {
 #ifdef MEM_GUARD
-		uv_timer_start(&timer,printf_mem_info,2000,0);
+		uv_timer_start(&timer,printf_mem_info,WAIT_TO_EXIT_TIMEOUT,0);
 #endif
 	}
 }
@@ -200,13 +202,13 @@ static void test_preview_start_tcp_server_cb()
 	int i;
 	for (i = 0; i < TEST_CLIENT_SIZE; i++) {
 		test_smts_client_t *test_client = (test_smts_client_t*) malloc(sizeof(test_smts_client_t));
-		assert(0 == test_smts_start_preivew(&loop, test_client, 0));
+		assert(0 == test_smts_start_preivew(&loop, test_client, i / 2));
 	}
 	if (--repert > 0) {
-		uv_timer_start(&timer, smts_client_start_new, 5000, 0);
+		uv_timer_start(&timer, smts_client_start_new, WAIT_TO_EXIT_TIMEOUT, 0);
 	} else {
 #ifdef MEM_GUARD
-		uv_timer_start(&timer,printf_mem_info,2000,0);
+		uv_timer_start(&timer,printf_mem_info,WAIT_TO_EXIT_TIMEOUT,0);
 #endif
 	}
 }
@@ -214,25 +216,31 @@ static void test_preview_start_tcp_server_cb()
 void start_mock_dvr_server()
 {
 	uv_loop_init(&dvr_loop);
-	smts_tcp_server_t *tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));
-	assert(0 == start_mock_dvr(tcp_server,&dvr_loop,DEFAULT_MOCK_DVR_PORT));
+	dvr_tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));
+	assert(0 == start_mock_dvr(dvr_tcp_server,&dvr_loop,DEFAULT_MOCK_DVR_PORT));
 	uv_run(&dvr_loop, UV_RUN_DEFAULT);
-	stop_tcp_server(tcp_server, NULL);
-	destroy_tcp_server(tcp_server);
+	stop_tcp_server(dvr_tcp_server, NULL);
+	destroy_tcp_server(dvr_tcp_server);
+}
+
+void start_smts_server()
+{
+	uv_loop_init(&loop);
+	uv_timer_init(&loop, &timer);
+	tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));
+	assert(0==init_tcp_server(tcp_server,&loop,DEFAUTL_LISTEN_PORT));
+	assert(0 == start_tcp_server(tcp_server, test_preview_start_tcp_server_cb, client_on_connection));
+
+	uv_run(&loop, UV_RUN_DEFAULT);
 }
 
 void test_preview_suite()
 {
 	uv_thread_t thread_t;
 	uv_thread_create(&thread_t, start_mock_dvr_server, NULL);
-	Sleep(500);
-	uv_loop_init(&loop);
-	uv_timer_init(&loop, &timer);
-	smts_tcp_server_t *tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));
-	assert(0==init_tcp_server(tcp_server,&loop,DEFAUTL_LISTEN_PORT));
-	assert(0 == start_tcp_server(tcp_server, test_preview_start_tcp_server_cb, client_on_connection));
-	destroy_tcp_server(tcp_server);
-	uv_run(&loop, UV_RUN_DEFAULT);
+	Sleep(1000);
+	start_smts_server();
 	uv_thread_join(&thread_t);
+	destroy_tcp_server(tcp_server);
 }
 
