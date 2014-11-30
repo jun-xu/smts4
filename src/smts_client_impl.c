@@ -108,6 +108,7 @@ void smts_client_send_preview_res(smts_client_t *client, int status)
 		if(r != 0){
 			CL_ERROR("send preview res error:%d,%s.\n",r,smts_strerror(r));
 			preview_cmd_res_t_destroy(preview_res);
+			//TODO: send error;
 		}
 	}
 	if (r != 0) {

@@ -115,9 +115,5 @@ void on_connected_to_dvr(smts_session_t* s, abstract_tcp_client_t *client, int s
  * private. callback when close dvr client.
  */
 void on_dvr_client_close_cb(smts_session_t *s);
-/**
- * private. callback when smts client send preview response.
- */
-void on_smts_client_send_preview_res(smts_session_t* s, abstract_tcp_client_t *aclient, int status);
 
 #endif /* SMTS_SESSION_H_ */

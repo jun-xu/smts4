@@ -14,7 +14,6 @@
 #include "smts_session.h"
 #include "smts_errorno.h"
 
-
 /**
  * for mem watch.
  */
@@ -38,7 +37,7 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		frame->seqno = dvr_frame->seqno;
 		frame->type = dvr_frame->frame_type;
 		frame->st = dvr_frame->st;
-		CL_DEBUG("dvr client recv frame:%d,%d\n",frame->seqno,frame->type);
+		CL_DEBUG("dvr client recv frame:%d,%d\n", frame->seqno, frame->type);
 		/// DONOT destroy dvr_frame. just free it. buf will be free with smts_frame_t *frame.
 		FREE(dvr_frame->original_buf);
 		FREE(dvr_frame);
@@ -120,6 +119,8 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 			on_dvr_client_send_preview_msg_cb);
 	if (r != 0) {
 		CL_ERROR("send preview cmd to dvr error:%s.\n", uv_err_name(r));
+		on_smts_dvr_client_send_preview(dvr_client->session, (abstract_tcp_client_t*) dvr_client,
+				DVR_SEND_PRIVIEW_CMD_ERROR);
 	}
 	return r;
 }
@@ -170,7 +171,7 @@ int smts_dvr_client_start_read_frames(smts_dvr_client_t *dvr_client)
 	r = tcp_client_start_read((abstract_tcp_client_t*) dvr_client, on_dvr_client_read_frame_cb);
 	if (r != 0) {
 		CL_ERROR("start read error:%s\n", uv_strerror(r));
-		// TODO: read error.
+		tcp_client_read_stop((abstract_tcp_client_t*) dvr_client);
 		return r;
 	}
 	return r;

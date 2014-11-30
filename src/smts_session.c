@@ -23,7 +23,6 @@
 #include "queue.h"
 #include "smts_errorno.h"
 
-
 /**
  * for mem watch.
  */
@@ -172,10 +171,9 @@ void on_smts_dvr_client_send_preview(smts_session_t* s, abstract_tcp_client_t *c
 	QUEUE *q;
 	if (status != 0) {
 		CL_ERROR("send dvr preview cmd error:%d,%s\n", status, smts_strerror(status));
-
 		//exit.2.3 send preview cmd to dvr error;
-//		r = DVR_SEND_PRIVIEW_CMD_ERROR;
-		//TODO: send preview cmd error.
+		s->exit_code = status;
+		stop_smts_session(s);
 		return;
 	}
 	if (s->client_size > 0) {
@@ -189,22 +187,11 @@ void on_smts_dvr_client_send_preview(smts_session_t* s, abstract_tcp_client_t *c
 	status = smts_dvr_client_start_read_frames(&s->dvr);
 	if (status != 0) {
 		CL_ERROR("send dvr preview cmd error:%d,%s\n", status, smts_strerror(status));
-		//TODO: start read frames error..
+		s->exit_code = status;
+		stop_smts_session(s);
 		return;
 	}
 
-}
-
-void on_smts_client_send_preview_res(smts_session_t* s, abstract_tcp_client_t *aclient, int status)
-{
-	smts_client_t *client = (smts_client_t*) aclient;
-	status = add_smts_client(s, client);
-	CL_DEBUG("add client. client size:%d\n", s->client_size);
-	if (status != 0) {
-		//TODO: destroy session and close client.
-		CL_ERROR("add client to session error:%d\n", status);
-		return;
-	}
 }
 
 int smts_start_preview(smts_client_t* client, play_cmd_t *play)
