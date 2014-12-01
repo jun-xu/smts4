@@ -48,13 +48,17 @@ void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
 {
 	malloc_entity *e = (malloc_entity*) malloc(sizeof(malloc_entity));
 	void *stack_trace[MAX_DUMP_STRACK_TRACE_DEPTH] = { 0 };
+	void *ptr = malloc(s);
 	QUEUE_INIT(&e->q);
 	e->file = file;
 	e->fun = fun;
 	e->line = line;
 	e->s = s;
-	void *ptr = malloc(s);
 	e->ptr = ptr;
+#ifdef _WIN32
+	e->stack_depth = 0;
+	e->stack_strings = NULL;
+#else
 	/**
 	 * get all fun addr of stack traces.
 	 */
@@ -63,7 +67,7 @@ void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
 	 * change to fun names;
 	 */
 	e->stack_strings = (char**) backtrace_symbols(stack_trace, e->stack_depth);
-
+#endif
 	uv_mutex_lock(&mem_mutex);
 	QUEUE_INSERT_HEAD(&pool.entity, &e->q);
 	uv_mutex_unlock(&mem_mutex);
