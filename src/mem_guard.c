@@ -9,6 +9,10 @@
 #include "css_logger.h"
 #include "queue.h"
 
+#include <execinfo.h>
+
+#define MAX_DUMP_STRACK_TRACE_DEPTH 10
+
 typedef struct
 {
 	QUEUE entity;
@@ -20,7 +24,13 @@ typedef struct
 	int32_t line;
 	const char *fun;
 	size_t s;
+
 	void *ptr;
+	/**
+	 * stack of ptr malloc.
+	 */
+	char **stack_strings;
+	int stack_depth;
 	QUEUE q;
 
 } malloc_entity;
@@ -37,6 +47,7 @@ void init_mem_guard()
 void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
 {
 	malloc_entity *e = (malloc_entity*) malloc(sizeof(malloc_entity));
+	void *stack_trace[MAX_DUMP_STRACK_TRACE_DEPTH] = { 0 };
 	QUEUE_INIT(&e->q);
 	e->file = file;
 	e->fun = fun;
@@ -44,6 +55,15 @@ void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
 	e->s = s;
 	void *ptr = malloc(s);
 	e->ptr = ptr;
+	/**
+	 * get all fun addr of stack traces.
+	 */
+	e->stack_depth = backtrace(stack_trace, MAX_DUMP_STRACK_TRACE_DEPTH);
+	/**
+	 * change to fun names;
+	 */
+	e->stack_strings = (char**) backtrace_symbols(stack_trace, e->stack_depth);
+
 	uv_mutex_lock(&mem_mutex);
 	QUEUE_INSERT_HEAD(&pool.entity, &e->q);
 	uv_mutex_unlock(&mem_mutex);
@@ -71,6 +91,7 @@ void free_guard(void *ptr)
 		uv_mutex_lock(&mem_mutex);
 		QUEUE_REMOVE(&c->q);
 		uv_mutex_unlock(&mem_mutex);
+		free(c->stack_strings);
 		free(c);
 	}
 
@@ -81,11 +102,15 @@ void printf_all_ptrs()
 	QUEUE *q;
 	malloc_entity *c = NULL;
 	int count = 0;
+	int i;
 	CL_DEBUG("------------printf all not free ptrs.---------------\n");
 	QUEUE_FOREACH(q,&pool.entity)
 	{
 		c = QUEUE_DATA(q, malloc_entity, q);
-		CL_DEBUG("not free ptr:%p of %s:%d.%s.\n", c->ptr, c->file, c->line, c->fun);
+		CL_DEBUG("not free ptr:%p of %s:%d.%s.\nStack Trace:\n", c->ptr, c->file, c->line, c->fun);
+		for (i = 1; i < c->stack_depth; i++) {
+			CL_DEBUG("[%d] %s \n", i - 1, c->stack_strings[i]);
+		}
 		count++;
 	}
 	CL_DEBUG("------------total:%d ptrs not free!.\n-------------", count);
