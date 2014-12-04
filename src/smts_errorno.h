@@ -26,6 +26,11 @@
 #define DVR_RECV_INVALID_PACKET_ERROR		8004
 #define DVR_RECV_FRAME_ERROR				8005
 
+/**
+ * inner error errorcode 5xxx
+ */
+#define NET_ADDR_NOT_FOUND 50001
+
 const char* smts_strerror(int err);
 
 #define SMTS_ERR_NAME_GEN(name, _) case name: return #name;
@@ -40,5 +45,6 @@ const char* smts_strerror(int err);
   XX(DVR_SEND_PRIVIEW_CMD_ERROR,"send preview cmd to dvr error.")				\
   XX(DVR_RECV_INVALID_PACKET_ERROR,"recv invalid packet error.")				\
   XX(DVR_RECV_FRAME_ERROR,"recv frame packet error.")							\
+  XX(NET_ADDR_NOT_FOUND,"net addr not found.")									\
 
 #endif /* SMTS_ERRORNO_H_ */

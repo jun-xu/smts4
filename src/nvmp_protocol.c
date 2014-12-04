@@ -14,7 +14,6 @@
 #include "encode_decode_util.h"
 #include "smts_session.h"
 
-
 /**
  * for mem watch.
  */
@@ -188,6 +187,18 @@ int cmd_name##_t_encode(cmd_name##_t *t){							\
 PROTOCOL_MAP(GEN_STRUCT_ENCODE, GEN_STRUCT_ARGS_ENCODE, GEN_STRUCT_3ARGS_ENCODE);
 
 /**
+ * increase ref.
+ */
+#define GEN_STRUCT_ARGS_INCREASE_REF(type,name)
+#define GEN_STRUCT_3ARGS_INCREASE_REF(type,name,arg)
+#define GEN_STRUCT_INCREASE_REF(cmd_name,packet_opt,pcmd,fileds,_fun)\
+int cmd_name##_t_increase_ref(cmd_name##_t *t){						\
+	t->ref ++;														\
+	return 0;														\
+}
+PROTOCOL_MAP(GEN_STRUCT_INCREASE_REF,GEN_STRUCT_ARGS_INCREASE_REF,GEN_STRUCT_3ARGS_INCREASE_REF)
+
+/**
  * destroy packet.
  */
 #define Int16_destroy(name)
@@ -222,5 +233,4 @@ int cmd_name##_t_destroy(cmd_name##_t *t){										\
 }
 
 PROTOCOL_MAP(GEN_STRUCT_DESTROY, GEN_STRUCT_ARGS_DESTROY, GEN_STRUCT_3ARGS_DESTROY);
-
 

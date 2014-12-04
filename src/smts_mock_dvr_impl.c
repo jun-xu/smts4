@@ -30,17 +30,16 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		mock_dvr_frame_t *dvr_frame = (mock_dvr_frame_t*) malloc(sizeof(mock_dvr_frame_t));
 		mock_dvr_frame_t_init(dvr_frame);
 		mock_dvr_frame_t_decode(buf, dvr_frame);
-		frame->data.base = buf->base;
-		frame->data.len = buf->len;
+		frame->data = dvr_frame;
 		frame->frame_data.base = dvr_frame->frame.base;
 		frame->frame_data.len = dvr_frame->frame.len;
 		frame->seqno = dvr_frame->seqno;
 		frame->type = dvr_frame->frame_type;
 		frame->st = dvr_frame->st;
 		CL_DEBUG("dvr client recv frame:%d,%d\n", frame->seqno, frame->type);
-		/// DONOT destroy dvr_frame. just free it. buf will be free with smts_frame_t *frame.
-		FREE(dvr_frame->original_buf);
-		FREE(dvr_frame);
+		///increase ref.
+		mock_dvr_frame_t_increase_ref(dvr_frame);
+		mock_dvr_frame_t_destroy(dvr_frame);
 		on_smts_dvr_client_recv_frame(c->session, frame, 0);
 	} else {
 		CL_ERROR("read frame error:%d,%s\n", status, smts_strerror(status));
@@ -120,43 +119,15 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 	if (r != 0) {
 		CL_ERROR("send preview cmd to dvr error:%s.\n", uv_err_name(r));
 		on_smts_dvr_client_send_preview(dvr_client->session, (abstract_tcp_client_t*) dvr_client,
-				DVR_SEND_PRIVIEW_CMD_ERROR);
+		DVR_SEND_PRIVIEW_CMD_ERROR);
 	}
 	return r;
 }
-///**
-// * @deprecated
-// * decode frame which read from mock dvr write by erlang.
-// * the frame proto is just test. and no cmd field. so, DONOT use this method.
-// * <<Packet_len:32,Seqno:32,Type:32,ST:64,data/binary>>
-// */
-//static void decode_smts_frame(smts_frame_t *frame)
-//{
-//	char *buf = frame->data.base;
-//	buf += 4;		///ignore 4 bytes for packet_len
-//	frame->seqno = decode_int32(buf);
-//	buf += 4;
-//	frame->type = decode_int32(buf);
-//	buf += 4;
-//	frame->st = decode_int64(buf); /// start time. ms.
-//	buf += 8;
-//	frame->frame_data.base = buf;
-//	frame->frame_data.len = frame->data.len - 20;
-//}
-
-//int init_smts_frame(smts_frame_t **frame, uv_buf_t *buf)
-//{
-//	*frame = (smts_frame_t*) malloc(sizeof(smts_frame_t));
-//	(*frame)->data.base = buf->base;
-//	(*frame)->data.len = buf->len;
-//	decode_smts_frame(*frame);
-//	return 0;
-//}
 
 int destroy_smts_frame(smts_frame_t *frame)
 {
 	CL_DEBUG("free frame:%d,%d\n", frame->seqno, frame->type);
-	FREE(frame->data.base);
+	mock_dvr_frame_t_destroy((mock_dvr_frame_t*) frame->data);
 	FREE(frame);
 	return 0;
 }

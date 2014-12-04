@@ -37,6 +37,7 @@ typedef enum
 	XX(session_manager_suite,0)			\
 	XX(dvrs_info_suite,0)				\
 	XX(mem_guard_suite,0)				\
+	XX(net_addrs_suite,0)				\
 
 #else
 #define SMTS_TEST_CASES(XX)

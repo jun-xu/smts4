@@ -15,6 +15,7 @@
 #include "test_mock_dvr.h"
 #include "smts_client_impl.h"
 #include "session_manager.h"
+#include "net_addrs_util.h"
 #include <assert.h>
 
 /**
@@ -237,6 +238,7 @@ void start_smts_server()
 
 void test_preview_suite()
 {
+	init_smts_addrs();
 	init_session_manager();
 	uv_thread_t thread_t;
 	uv_thread_create(&thread_t, start_mock_dvr_server, NULL);

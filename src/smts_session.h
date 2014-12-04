@@ -55,11 +55,12 @@ typedef enum
  */
 typedef struct smts_frame_s
 {
-	uv_buf_t data;	/// total recv buf from socket.
+	void* data;		///  recv packet.
 	uv_buf_t frame_data; /// frame data.
 	frame_type_t type;	/// {@link frame_type_t}
 	int32_t seqno;		/// seqno of frame.
 	int64_t st;			/// start time of frame. ms.
+
 } smts_frame_t;
 
 /**

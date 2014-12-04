@@ -11,6 +11,7 @@
 #include "smts_proto.h"
 #include "encode_decode_util.h"
 #include "smts_errorno.h"
+#include "net_addrs_util.h"
 
 /**
  * for mem watch.
@@ -196,10 +197,29 @@ int tcp_client_connect(abstract_tcp_client_t *client, char *ip, int32_t port, tc
 		int packet_opt)
 {
 	int r = 0;
+	char *local_ip;
 	client_connect_req_t *req = (client_connect_req_t*) malloc(sizeof(client_connect_req_t));
-
+	struct sockaddr_in addr;
 	client->packet_opt = packet_opt;
 	r = uv_tcp_init(client->loop, &client->socket);
+	local_ip = smts_get_one_addrs();
+	if (local_ip == NULL) {
+		r = NET_ADDR_NOT_FOUND;
+		CL_ERROR("get local addr error:%d,%s.\n", r, smts_strerror(r));
+		return r;
+	}
+	r = uv_ip4_addr(local_ip, 0, &addr);
+	if (r != 0) {
+		CL_ERROR("uv_ip4_addr error\n");
+		return r;
+	}
+	r = uv_tcp_bind(&client->socket, (struct sockaddr *) &addr, 0);
+	if (r != 0) {
+		CL_ERROR("bind ip:%s error:%d,%s\n", ip, r, smts_strerror(r));
+		return r;
+	}
+
+	CL_DEBUG("bind local addr:%s .\n", local_ip);
 	r = uv_ip4_addr(ip, port, &client->addr);
 	if (r != 0) {
 		CL_ERROR("uv_ip4_addr error\n");

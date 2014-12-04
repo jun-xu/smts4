@@ -39,6 +39,8 @@ typedef struct cmd_name##_s{					\
 }cmd_name##_t;
 PROTOCOL_MAP(GEN_STRUCT, GEN_STRUCT_FILED, GEN_STRUCT_3FILED);
 
+
+typedef int (*cmd_destroy_fun)(abstract_cmd_t *cmd);
 /**
  * declare methods
  */
@@ -49,9 +51,12 @@ int cmd_name##_t_init(cmd_name##_t *t);							\
 int cmd_name##_t_len(cmd_name##_t *t);							\
 int cmd_name##_t_decode(uv_buf_t *packet,cmd_name##_t *t);		\
 int cmd_name##_t_encode(cmd_name##_t *t);						\
+int cmd_name##_t_increase_ref(cmd_name##_t *t);					\
 int cmd_name##_t_destroy(cmd_name##_t *t);						\
 
 PROTOCOL_MAP(GEN_STRUCT_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
+
+
 
 
 #define PACKET_INVALID -1
