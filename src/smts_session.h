@@ -14,7 +14,7 @@
 #include "smts_mock_dvr_impl.h"
 #include "smts_proto.h"
 
-#define SESSION_WAIT_EXIT_TIMEOUT 100
+#define SESSION_WAIT_EXIT_TIMEOUT 5000
 
 typedef enum
 {
