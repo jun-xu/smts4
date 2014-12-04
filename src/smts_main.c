@@ -11,8 +11,9 @@
 #include <stdlib.h>
 #include "css_logger.h"
 #include "tcp_server.h"
+#include "net_addrs_util.h"
 #include "smts_client_impl.h"
-
+#include "session_manager.h"
 
 /**
  * for mem watch.
@@ -38,6 +39,8 @@ int main(int argc, char* argv[])
 
 #else
 	smts_tcp_server_t *tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));
+	init_smts_addrs();
+	init_session_manager();
 	uv_loop_init(&loop);
 	init_tcp_server(tcp_server, &loop, DEFAUTL_LISTEN_PORT);
 	start_tcp_server(tcp_server, on_start_tcp_server_cb, client_on_connection);

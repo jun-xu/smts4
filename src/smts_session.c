@@ -141,7 +141,7 @@ void on_smts_dvr_client_recv_frame(smts_session_t* s, smts_frame_t *frame, int s
 		return;
 	}
 
-	CL_DEBUG("recv frame:%d,%d, client size:%d\n", frame->seqno, frame->type, s->client_size);
+//	CL_DEBUG("recv frame:%d,%d, client size:%d\n", frame->seqno, frame->type, s->client_size);
 	// preview.7. send frame to clients.
 	if (s->client_size > 0) {
 		smts_frame_res_t *frame_res = (smts_frame_res_t*) malloc(sizeof(smts_frame_res_t));

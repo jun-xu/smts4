@@ -6,6 +6,7 @@
  */
 
 #include "smts_abstract_session.h"
+#include <string.h>
 
 void init_abstract_session(abstract_session_t *session)
 {

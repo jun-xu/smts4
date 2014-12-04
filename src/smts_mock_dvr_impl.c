@@ -36,7 +36,7 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		frame->seqno = dvr_frame->seqno;
 		frame->type = dvr_frame->frame_type;
 		frame->st = dvr_frame->st;
-		CL_DEBUG("dvr client recv frame:%d,%d\n", frame->seqno, frame->type);
+//		CL_DEBUG("dvr client recv frame:%d,%d\n", frame->seqno, frame->type);
 		///increase ref.
 		mock_dvr_frame_t_increase_ref(dvr_frame);
 		mock_dvr_frame_t_destroy(dvr_frame);

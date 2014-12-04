@@ -14,6 +14,8 @@
 #include "smts_proto.h"
 #include "smts_errorno.h"
 
+#include "test_mock_dvr.h"
+
 /**
  * for mem watch.
  */
