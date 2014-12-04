@@ -92,7 +92,7 @@ compile_linux_uv:
 	mkdir -p $(BIN_DIR)
 	rm -rf $(LIBUV_INCLUDE_DIR)
 	mkdir -p $(LIBUV_INCLUDE_DIR)
-	cp -r $(LIBUV_INCLUDE_SOURCE_DIR) $(LIBUV_INCLUDE_DIR)
+	cp -r $(LIBUV_INCLUDE_SOURCE_DIR)* $(LIBUV_INCLUDE_DIR)
 	
 	cd $(LIBUV_SOURCE_DIR)&&sh autogen.sh&&./configure --prefix=$(LIBUV_SOURCE_BUILD_DIR)&&make&&make install\
 					&&cp -r $(LIBUV_SOURCE_BUILD_DIR)lib/libuv.so* $(BIN_DIR)
@@ -100,7 +100,7 @@ compile_linux_uv:
 compile:
 	rm -fr $(EXE)
 	mkdir -p $(BIN_DIR)
-	$(CXX) -o $(EXE) $(SRC_FILES) $(INCPATHS) $(LIBS) -L$(LIB_PATH)
+	$(CXX) -o $(EXE) $(SRC_FILES) -DMEM_GUARD $(INCPATHS) $(LIBS) -L$(LIB_PATH)
 	
 compile_linux:
 	rm -fr $(EXE)

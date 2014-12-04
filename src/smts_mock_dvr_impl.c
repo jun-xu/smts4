@@ -126,7 +126,7 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 
 int destroy_smts_frame(smts_frame_t *frame)
 {
-	CL_DEBUG("free frame:%d,%d\n", frame->seqno, frame->type);
+//	CL_DEBUG("free frame:%d,%d\n", frame->seqno, frame->type);
 	mock_dvr_frame_t_destroy((mock_dvr_frame_t*) frame->data);
 	FREE(frame);
 	return 0;

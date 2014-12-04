@@ -18,8 +18,8 @@
  * test dvrs config.
  */
 
-#define DEFAULT_DVR_SIZE 1
-static char *dvr_ips[] = { "127.0.0.1" };
+#define DEFAULT_DVR_SIZE 5
+static char *dvr_ips[] = { "192.168.3.19","192.168.3.14","192.168.3.15","192.168.3.11","192.168.3.18" };
 //
 //#define DEFAULT_DVR_SIZE 1
 //static char *dvr_ips[] = { "127.0.0.1" };
