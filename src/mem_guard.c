@@ -9,7 +9,11 @@
 #include "css_logger.h"
 #include "queue.h"
 
+#ifdef _WIN32
+
+#else
 #include <execinfo.h>
+#endif
 
 #define MAX_DUMP_STRACK_TRACE_DEPTH 10
 

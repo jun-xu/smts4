@@ -64,6 +64,7 @@ int start_tcp_server(smts_tcp_server_t *tcp_server, start_stop_cb cb, uv_connect
 		CL_INFO("bind socket error\n");
 		return r;
 	}
+	tcp_server->connnect_cb = connect_cb;
 	r = uv_listen((uv_stream_t*) &tcp_server->server_socket, DEFAULT_BACKLOG_LENGTH, connect_cb);
 	if (r) {
 		CL_INFO("Listen error %s\n", uv_strerror(r));
@@ -140,11 +141,11 @@ static void close_async_handle(uv_async_t* handle)
 
 static void test_common_tcp_server()
 {
-
+	uv_thread_t tid;
+	uv_async_t req;
 	smts_tcp_server_t *tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));
 	uv_loop_init(&loop);
 	assert(0==init_tcp_server(tcp_server,&loop,DEFAUTL_LISTEN_PORT));
-	uv_thread_t tid;
 	uv_thread_create(&tid, start_service_thread, tcp_server);
 
 	Sleep(1000);
@@ -152,7 +153,6 @@ static void test_common_tcp_server()
 	/**
 	 * __APPLE__ : kqueue not return if no other events. so, send aync event to weakup kqueue.
 	 */
-	uv_async_t req;
 	uv_async_init(&loop, &req, close_async_handle);
 	uv_async_send(&req);
 

@@ -35,6 +35,8 @@ typedef struct smts_tcp_server_s
 	tcp_server_status status;
 	struct sockaddr_in addr;
 	uv_tcp_t server_socket;
+
+	uv_connection_cb connnect_cb;
 	start_stop_cb start_cb;
 	start_stop_cb stop_cb;
 } smts_tcp_server_t;

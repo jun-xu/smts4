@@ -65,8 +65,9 @@ void destory_smts_addrs()
 char* smts_get_one_addrs()
 {
 	if (addrs.count > 0) {
+		char *ip;
 		uv_mutex_lock(&smts_addr_mutex);
-		char *ip = (*addrs.ips)[addrs.index++];
+		ip = (*addrs.ips)[addrs.index++];
 		addrs.index = addrs.index % addrs.count;
 		uv_mutex_unlock(&smts_addr_mutex);
 		return ip;

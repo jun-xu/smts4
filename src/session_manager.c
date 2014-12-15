@@ -139,6 +139,7 @@ void test_compare_session_key()
 void test_session_manager_impl()
 {
 	abstract_session_t s1, s2, s3, s4;
+	abstract_session_t *g;
 	init_session_manager();
 	init_abstract_session(&s1);
 	init_abstract_session(&s2);
@@ -169,7 +170,7 @@ void test_session_manager_impl()
 	assert(0 == add_session(&s4));
 	assert(4 == size_of_sessions());
 
-	abstract_session_t *g;
+
 	g = get_session(&s1.key);
 	assert(g == &s1);
 	g = get_session(&s2.key);

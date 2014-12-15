@@ -49,8 +49,9 @@ static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *p
 //	printf("client:%d recv cmd:%x status:%d\n", client->socket.io_watcher.fd, cmd, test_client->status);
 	if (test_client->status == 0) {
 		///read preview response.
+		preview_cmd_res_t *res;
 		CHECK_RES_CMD(PREVIEW_RES_CMD, packet);
-		preview_cmd_res_t *res = (preview_cmd_res_t*) malloc(sizeof(preview_cmd_res_t));
+		res = (preview_cmd_res_t*) malloc(sizeof(preview_cmd_res_t));
 		assert(0 == preview_cmd_res_t_init(res));
 		assert(0 == preview_cmd_res_t_decode(packet, res));
 		CL_DEBUG("read preview response,status:%d.\n", res->status);
@@ -59,8 +60,9 @@ static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *p
 		preview_cmd_res_t_destroy(res);
 	} else {
 		/// read frame
+		smts_frame_res_t *frame;
 		CHECK_RES_CMD(SEND_FRAME_CMD, packet);
-		smts_frame_res_t *frame = (smts_frame_res_t*) malloc(sizeof(smts_frame_res_t));
+		frame = (smts_frame_res_t*) malloc(sizeof(smts_frame_res_t));
 		assert(0 == smts_frame_res_t_init(frame));
 		assert(0 == smts_frame_res_t_decode(packet, frame));
 //		CL_DEBUG("test client read frame:%d, status:%d\n", frame->seqno, status);
@@ -92,10 +94,12 @@ static void test_client_on_send_preview_cmd(abstract_tcp_client_t *client, abstr
 
 static void test_client_on_connected(abstract_tcp_client_t *aclient, int status)
 {
+	test_smts_client_t *client;
+	preview_cmd_t *req;
 	CL_DEBUG("test client fd:%d connected:%d\n", aclient->socket.io_watcher.fd, status);
-	test_smts_client_t *client = (test_smts_client_t*) aclient;
+	client = (test_smts_client_t*) aclient;
 // 2. send preview cmd.
-	preview_cmd_t *req = (preview_cmd_t *) malloc(sizeof(preview_cmd_t));
+	req = (preview_cmd_t *) malloc(sizeof(preview_cmd_t));
 	assert(0 == preview_cmd_t_init(req));
 	req->src_addr = 2;
 	req->dest_addr = 3;
@@ -238,9 +242,10 @@ void start_smts_server()
 
 void test_preview_suite()
 {
+	uv_thread_t thread_t;
 	init_smts_addrs();
 	init_session_manager();
-	uv_thread_t thread_t;
+
 	uv_thread_create(&thread_t, start_mock_dvr_server, NULL);
 	Sleep(1000);
 	start_smts_server();

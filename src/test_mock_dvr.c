@@ -80,9 +80,11 @@ static int moc_dvr_dispatch_packet(abstract_tcp_client_t *client, uv_buf_t *buf,
 static void on_mock_dvr_connect_cb(uv_stream_t* server, int status)
 {
 	test_mock_dvr_t *dvr = (test_mock_dvr_t*) malloc(sizeof(test_mock_dvr_t));
+	uv_tcp_t* socket;
+	int r;
 	init_test_mock_dvr(dvr, server->loop);
-	uv_tcp_t* socket = &dvr->socket;
-	int r = uv_accept(server, (uv_stream_t*) socket);
+	socket = &dvr->socket;
+	r = uv_accept(server, (uv_stream_t*) socket);
 	if (r != 0) {
 		CL_ERROR("accept error:%d,%s\n", r, smts_strerror(r));
 		close_abstract_tcp_client((abstract_tcp_client_t*) dvr, mock_dvr_close_cb);
@@ -114,8 +116,9 @@ static void on_mock_dvr_send_frame_cb(abstract_tcp_client_t *aclient, abstract_c
 	CL_DEBUG("free mock dvr frame:%d\n", frame->seqno);
 	mock_dvr_frame_t_destroy(frame);
 	if (status != 0) {
+		test_mock_dvr_t *dvr;
 		CL_ERROR("mock dvr send frame error:%d,%s\n", status, smts_strerror(status));
-		test_mock_dvr_t *dvr = (test_mock_dvr_t*) aclient;
+		dvr = (test_mock_dvr_t*) aclient;
 		destroy_test_mock_dvr(dvr, status);
 	}
 

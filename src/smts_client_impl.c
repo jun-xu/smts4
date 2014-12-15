@@ -61,9 +61,11 @@ static void init_smts_client(smts_client_t *smts_client, uv_loop_t *loop)
 void client_on_connection(uv_stream_t* server, int status)
 {
 	smts_client_t *smts_client = (smts_client_t*) malloc(sizeof(smts_client_t));
+	uv_tcp_t* socket;
+	int r;
 	init_smts_client(smts_client, server->loop);
-	uv_tcp_t* socket = &smts_client->socket;
-	int r = uv_accept(server, (uv_stream_t*) socket);
+	socket = &smts_client->socket;
+	r = uv_accept(server, (uv_stream_t*) socket);
 	if (r != 0) {
 		CL_ERROR("accept error:%d,%s\n", r, smts_strerror(r));
 		close_abstract_tcp_client((abstract_tcp_client_t*) smts_client, socket_close_cb);
@@ -82,10 +84,11 @@ static void on_smts_client_send_preview_res_cb_slient(abstract_tcp_client_t *acl
 		int status)
 {
 	preview_cmd_res_t *preview_res = (preview_cmd_res_t*) packet;
+	smts_client_t *smts_client;
 	preview_cmd_res_t_destroy(preview_res);
 
 	CL_DEBUG("send preview res to client:%d status:%d\n", aclient->socket.io_watcher.fd, status);
-	smts_client_t *smts_client = (smts_client_t*) aclient;
+	smts_client = (smts_client_t*) aclient;
 	smts_client->status = SMTS_CLIENT_ON_SEND_FRAMES;
 }
 
@@ -170,8 +173,9 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 	CL_DEBUG("dispatch preview play cmd:{%lld,%d,%d}.\n", play.dvr_id, play.channel_no, play.frame_mode);
 	r = media_client_start_preview(client, &play);
 	if (r != 0) {
+		preview_cmd_res_t *preview_res;
 		CL_ERROR("start preview error:%d,%s\n", r, smts_strerror(r));
-		preview_cmd_res_t *preview_res = (preview_cmd_res_t*) malloc(sizeof(preview_cmd_res_t));
+		preview_res = (preview_cmd_res_t*) malloc(sizeof(preview_cmd_res_t));
 
 		preview_res->status = r;
 		preview_res->Hue = 0;

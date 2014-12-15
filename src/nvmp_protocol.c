@@ -115,8 +115,9 @@ PROTOCOL_MAP(GEN_STRUCT_DECODE, GEN_STRUCT_ARGS_DECODE, GEN_STRUCT_3ARGS_DECODE)
 #define GEN_STRUCT_BUFS_INNER_ALLOC(cmd_name,_packet,pcmd,fileds,_fun)				\
 static int cmd_name##_t_bufs_inner_alloc(cmd_name##_t *t){							\
 	int is_first=1,is_new=1,buf_size = 0,index=0;									\
+	uv_buf_t *buf;																	\
 	t->original_buf_ref_bit_map =0;													\
-	uv_buf_t *buf = t->original_buf;												\
+	buf = t->original_buf;															\
 	fileds																			\
 	if(!is_new){																	\
 		buf->base=(char*)malloc(buf_size);											\

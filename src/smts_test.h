@@ -13,7 +13,11 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#ifdef _WIN32
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
 /**
  * test case function interface.
  */
