@@ -149,6 +149,7 @@ void on_smts_dvr_client_recv_frame(smts_session_t* s, smts_frame_t *frame, int s
 		frame_res->seqno = frame->seqno;
 		frame_res->frame.base = frame->frame_data.base;
 		frame_res->frame.len = frame->frame_data.len;
+		frame_res->frame_type = frame->type;
 		frame_res->data = frame;
 		smts_frame_res_t_encode(frame_res);
 		frame_res->ref += s->client_size;

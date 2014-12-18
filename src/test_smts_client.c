@@ -65,7 +65,7 @@ static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *p
 		frame = (smts_frame_res_t*) malloc(sizeof(smts_frame_res_t));
 		assert(0 == smts_frame_res_t_init(frame));
 		assert(0 == smts_frame_res_t_decode(packet, frame));
-//		CL_DEBUG("test client read frame:%d, status:%d\n", frame->seqno, status);
+		CL_DEBUG("test client read frame:%d type:%d, status:%d\n", frame->seqno, frame->frame_type,status);
 		test_client->recv_frame_account++;
 		if (test_client->cur_frame_seq == -1) {
 			test_client->cur_frame_seq = frame->seqno;

@@ -138,6 +138,7 @@ T(preview_cmd_res,PACK0,							\
 T(smts_frame_res,PACK0,								\
   SEND_FRAME_CMD,									\
   PROTOCOL_HEAD_FILED(ARG2)							\
+  ARG2(Int32,frame_type)							\
   ARG3(BinaryBufRef,frame,t->packet_len-20),		\
   NULL												\
 )													\
