@@ -17,12 +17,15 @@
 /**
  * test dvrs config.
  */
-
+#ifdef SMTS_TEST
+#define DEFAULT_DVR_SIZE 1
+static char *dvr_ips[] = { "127.0.0.1" };
+#else
 #define DEFAULT_DVR_SIZE 5
 static char *dvr_ips[] = { "192.168.3.19","192.168.3.14","192.168.3.15","192.168.3.11","192.168.3.18" };
+#endif
 //
-//#define DEFAULT_DVR_SIZE 1
-//static char *dvr_ips[] = { "127.0.0.1" };
+
 
 int init_dvr_connect_config(int64_t dvr_id, int16_t channel_no, int32_t frame_mode, dvr_info_t *dvr)
 {

@@ -174,7 +174,7 @@ static uv_loop_t dvr_loop;
 static uv_timer_t timer;
 static smts_tcp_server_t *tcp_server = NULL;
 static smts_tcp_server_t *dvr_tcp_server = NULL;
-#define WAIT_TO_EXIT_TIMEOUT 2000
+#define WAIT_TO_EXIT_TIMEOUT 5000
 static int repert = 1;
 #define TEST_CLIENT_SIZE 1
 

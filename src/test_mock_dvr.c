@@ -113,7 +113,7 @@ static void on_mock_dvr_send_frame_cb(abstract_tcp_client_t *aclient, abstract_c
 {
 
 	mock_dvr_frame_t *frame = (mock_dvr_frame_t*) packet;
-	CL_DEBUG("free mock dvr frame:%d\n", frame->seqno);
+//	CL_DEBUG("free mock dvr frame:%d\n", frame->seqno);
 	mock_dvr_frame_t_destroy(frame);
 	if (status != 0) {
 		test_mock_dvr_t *dvr;
@@ -143,6 +143,7 @@ static void dvr_send_frame0(uv_timer_t* handle)
 		frame->frame.len = dvr->frame_bin.len;
 	}
 	frame->st = dvr->seqno * dvr->interval;
+//	CL_DEBUG("mock dvr send frame:%d\n",frame->seqno);
 	assert(0 == mock_dvr_frame_t_encode(frame));
 	r = tcp_client_send_msg((abstract_tcp_client_t*) dvr, (abstract_cmd_t*) frame, on_mock_dvr_send_frame_cb);
 	if (r != 0) {

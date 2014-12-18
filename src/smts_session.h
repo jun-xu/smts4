@@ -14,7 +14,11 @@
 #include "smts_mock_dvr_impl.h"
 #include "smts_proto.h"
 
+#ifdef SMTS_TEST
+#define	SESSION_WAIT_EXIT_TIMEOUT 500
+#else
 #define SESSION_WAIT_EXIT_TIMEOUT 5000
+#endif
 
 typedef enum
 {

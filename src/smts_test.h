@@ -13,11 +13,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#ifdef _WIN32
-#include <time.h>
-#else
-#include <sys/time.h>
-#endif
+#include "smts_util.h"
 /**
  * test case function interface.
  */

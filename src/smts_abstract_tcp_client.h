@@ -91,19 +91,10 @@ typedef struct client_connect_req_s
 	tcp_client_connect_cb cb;		/// on tcp client connected.
 } client_connect_req_t;
 
-/**
- * init tcp client socket.
- * @return 0:ok,other:errorcode.
- */
 int init_abstract_tcp_client(abstract_tcp_client_t *client, uv_loop_t *loop, int pack_opt);
-/**
- * close tcp client socket.
- * @return 0:ok, other:errorcode.
- */
+
 int close_abstract_tcp_client(abstract_tcp_client_t *client, tcp_client_close_cb close_cb);
-/**
- * init recv tmp buf.
- */
+
 void init_client_read_tmp_buf(client_read_tmp_buf_t *buf);
 
 void destroy_client_read_tmp_buf(client_read_tmp_buf_t *buf);
