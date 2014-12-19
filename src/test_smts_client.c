@@ -22,6 +22,7 @@
  * for mem watch.
  */
 #include "mem_guard.h"
+static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *packet, int status);
 static int init_test_smts_client(uv_loop_t *loop, test_smts_client_t *client)
 {
 	init_abstract_tcp_client((abstract_tcp_client_t*) client, loop, PACK0);
@@ -35,6 +36,23 @@ static void test_smts_client_close_cb(abstract_tcp_client_t* aclient, int status
 {
 	test_smts_client_t *test_client = (test_smts_client_t*) aclient;
 	FREE(test_client);
+}
+
+static void test_client_on_send_PTZ_cmd(abstract_tcp_client_t *client, abstract_cmd_t *packet, int status)
+{
+//	test_PTZ_cmd_t *req = (test_PTZ_cmd_t*)packet;
+	nvmp_cmd_t_destroy(packet);
+}
+
+static void test_client_send_PTZ_cmd(abstract_tcp_client_t *aclient)
+{
+	test_PTZ_cmd_t *req;
+	CL_DEBUG("test client fd:%d send ptz cmd.\n", aclient->socket.io_watcher.fd);
+	req = (test_PTZ_cmd_t *) malloc(sizeof(test_PTZ_cmd_t));
+	assert(0 == test_PTZ_cmd_t_init(req));
+	req->ptz = 12;
+	assert(0 == nvmp_cmd_t_encode((abstract_cmd_t*)req));
+	assert(0 == tcp_client_send_msg(aclient, (abstract_cmd_t* ) req, test_client_on_send_PTZ_cmd));
 }
 
 static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *packet, int status)
@@ -53,32 +71,42 @@ static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *p
 		CHECK_RES_CMD(PREVIEW_RES_CMD, packet);
 		res = (preview_cmd_res_t*) malloc(sizeof(preview_cmd_res_t));
 		assert(0 == preview_cmd_res_t_init(res));
-		assert(0 == preview_cmd_res_t_decode(packet, res));
+		assert(0 == nvmp_cmd_t_decode(packet, (abstract_cmd_t*)res));
 		CL_DEBUG("read preview response,status:%d.\n", res->status);
 		assert(0 == res->status);
 		test_client->status = 1;
-		preview_cmd_res_t_destroy(res);
+		nvmp_cmd_t_destroy((abstract_cmd_t*)res);
+//		test_client_send_PTZ_cmd(client);
 	} else {
-		/// read frame
-		smts_frame_res_t *frame;
-		CHECK_RES_CMD(SEND_FRAME_CMD, packet);
-		frame = (smts_frame_res_t*) malloc(sizeof(smts_frame_res_t));
-		assert(0 == smts_frame_res_t_init(frame));
-		assert(0 == smts_frame_res_t_decode(packet, frame));
-		CL_DEBUG("test client read frame:%d type:%d, status:%d\n", frame->seqno, frame->frame_type,status);
-		test_client->recv_frame_account++;
-		if (test_client->cur_frame_seq == -1) {
-			test_client->cur_frame_seq = frame->seqno;
-		} else {
-			assert(++test_client->cur_frame_seq == frame->seqno);
+		switch (cmd) {
+		case SEND_FRAME_CMD: {
+			/// read frame
+			smts_frame_res_t *frame;
+			CHECK_RES_CMD(SEND_FRAME_CMD, packet);
+			frame = (smts_frame_res_t*) malloc(sizeof(smts_frame_res_t));
+			assert(0 == smts_frame_res_t_init(frame));
+			assert(0 == nvmp_cmd_t_decode(packet, (abstract_cmd_t*)frame));
+			CL_DEBUG("test client read frame:%d type:%d, status:%d\n", frame->seqno, frame->frame_type, status);
+			test_client->recv_frame_account++;
+			if (test_client->cur_frame_seq == -1) {
+				test_client->cur_frame_seq = frame->seqno;
+			} else {
+				assert(++test_client->cur_frame_seq == frame->seqno);
+			}
+			nvmp_cmd_t_destroy((abstract_cmd_t*)frame);
+			if (test_client->recv_frame_account > TERMINATE_SEQNO) {
+				test_client->socket.data = test_client;
+				CL_DEBUG("test smts client fd:%d closed.\n", test_client->socket.io_watcher.fd);
+				close_abstract_tcp_client(client, test_smts_client_close_cb);
+				//			uv_close((uv_handle_t*) &test_client->socket, test_smts_client_close_cb);
+			}
 		}
-		smts_frame_res_t_destroy(frame);
-		if (test_client->recv_frame_account > TERMINATE_SEQNO) {
-			test_client->socket.data = test_client;
-			CL_DEBUG("test smts client fd:%d closed.\n", test_client->socket.io_watcher.fd);
-			close_abstract_tcp_client(client, test_smts_client_close_cb);
-//			uv_close((uv_handle_t*) &test_client->socket, test_smts_client_close_cb);
+			break;
+		case 0x80018010:  ///test send ptz cmd
+		default:
+			break;
 		}
+
 	}
 	return 0;
 }
@@ -86,7 +114,7 @@ static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *p
 static void test_client_on_send_preview_cmd(abstract_tcp_client_t *client, abstract_cmd_t *packet, int status)
 {
 	preview_cmd_t *req = (preview_cmd_t *) packet;
-	preview_cmd_t_destroy(req);
+	nvmp_cmd_t_destroy((abstract_cmd_t*)req);
 // 3. recv frame
 	assert(0 == tcp_client_start_read(client, test_client_on_read_packet));
 
@@ -108,11 +136,11 @@ static void test_client_on_connected(abstract_tcp_client_t *aclient, int status)
 	req->channel_no = 6;
 	memcpy(req->token, "token", sizeof("token"));
 	req->frame_mode = 7;
-	req->packet_len = preview_cmd_t_len(req);
+	req->packet_len = nvmp_cmd_t_len((abstract_cmd_t*)req);
 // alloc send bufs;
 //	assert(0 == preview_cmd_t_bufs_alloc(req));
 // encode packet
-	assert(0 == preview_cmd_t_encode(req));
+	assert(0 == nvmp_cmd_t_encode((abstract_cmd_t*)req));
 	assert(0 == tcp_client_send_msg(aclient, (abstract_cmd_t* ) req, test_client_on_send_preview_cmd));
 
 }
@@ -145,16 +173,16 @@ void test_struct_encode_decode_suite()
 	memcpy(req->token, "token", sizeof(token));
 	req->frame_mode = 7;
 
-	len = preview_cmd_t_len(req);
+	len = nvmp_cmd_t_len((abstract_cmd_t*)req);
 	req->packet_len = len;
 
 	assert(0 == preview_cmd_t_init(req0));
-	assert(0 == preview_cmd_t_encode(req));
+	assert(0 == nvmp_cmd_t_encode((abstract_cmd_t*)req));
 	assert(1 == req->original_buf_len);
 	packet = req->original_buf;
 	req->original_buf = NULL;
 	req->original_buf_len = 0;
-	assert(0 == preview_cmd_t_decode(packet, req0));
+	assert(0 == nvmp_cmd_t_decode(packet, (abstract_cmd_t*)req0));
 	assert(req0->packet_len == req->packet_len);
 	assert(req0->cmd == req->cmd);
 	assert(req0->src_addr == req->src_addr);
@@ -162,8 +190,8 @@ void test_struct_encode_decode_suite()
 	assert(req0->seqno == req->seqno);
 	assert(strcmp(req0->token, req->token) == 0);
 
-	assert(0 == preview_cmd_t_destroy(req));
-	assert(0 == preview_cmd_t_destroy(req0));
+	assert(0 == nvmp_cmd_t_destroy((abstract_cmd_t*)req));
+	assert(0 == nvmp_cmd_t_destroy((abstract_cmd_t*)req0));
 
 }
 /**

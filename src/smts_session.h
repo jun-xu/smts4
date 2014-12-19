@@ -74,6 +74,7 @@ typedef struct smts_frame_s
  * @return 0:ok. other:errorcode
  */
 int media_client_start_preview(smts_client_t* client, play_cmd_t *play);
+
 /**
  * smts client stop preview.
  * @param client {@link smts_client_t}
@@ -81,6 +82,12 @@ int media_client_start_preview(smts_client_t* client, play_cmd_t *play);
  * @return 0:ok. other:errorcode
  */
 int media_client_stop_preview(smts_session_t *s, smts_client_t* client);
+
+/**
+ * send cmd to dvr.
+ */
+int media_client_send_cmd(smts_client_t *client, abstract_cmd_t* cmd);
+
 /**
  * init smts session.
  * @param s {@link smts_session_t} smts session.

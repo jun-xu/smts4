@@ -16,6 +16,7 @@
  * smts client errorcode. 7xxx
  */
 #define SMTS_CLIENT_READ_ERROR  7001
+#define SMTS_CLIENT_NO_START 7002
 
 /**
  * dvr client errorcode 8xxx
@@ -46,5 +47,6 @@ const char* smts_strerror(int err);
   XX(DVR_RECV_INVALID_PACKET_ERROR,"recv invalid packet error.")				\
   XX(DVR_RECV_FRAME_ERROR,"recv frame packet error.")							\
   XX(NET_ADDR_NOT_FOUND,"net addr not found.")									\
+  XX(SMTS_CLIENT_NO_START,"client not start,maybe start preview first?!")		\
 
 #endif /* SMTS_ERRORNO_H_ */

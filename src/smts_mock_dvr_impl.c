@@ -29,7 +29,7 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		smts_frame_t *frame = (smts_frame_t*) malloc(sizeof(smts_frame_t));
 		mock_dvr_frame_t *dvr_frame = (mock_dvr_frame_t*) malloc(sizeof(mock_dvr_frame_t));
 		mock_dvr_frame_t_init(dvr_frame);
-		mock_dvr_frame_t_decode(buf, dvr_frame);
+		nvmp_cmd_t_decode(buf, (abstract_cmd_t*)dvr_frame);
 		frame->data = dvr_frame;
 		frame->frame_data.base = dvr_frame->frame.base;
 		frame->frame_data.len = dvr_frame->frame.len;
@@ -38,8 +38,8 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		frame->st = dvr_frame->st;
 //		CL_DEBUG("dvr client recv frame:%d,%d\n", frame->seqno, frame->type);
 		///increase ref.
-		mock_dvr_frame_t_increase_ref(dvr_frame);
-		mock_dvr_frame_t_destroy(dvr_frame);
+		nvmp_cmd_t_increase_ref((abstract_cmd_t*)dvr_frame);
+		nvmp_cmd_t_destroy((abstract_cmd_t*)dvr_frame);
 		on_smts_dvr_client_recv_frame(c->session, frame, 0);
 	} else {
 		CL_ERROR("read frame error:%d,%s\n", status, smts_strerror(status));
@@ -95,10 +95,10 @@ static void on_dvr_client_send_preview_msg_cb(abstract_tcp_client_t *aclient, ab
 {
 // 4. callback to session.
 	smts_dvr_client_t *client = (smts_dvr_client_t*) aclient;
-	mock_dvr_preview_t *cmd = (mock_dvr_preview_t*) packet;
+//	mock_dvr_preview_t *cmd = (mock_dvr_preview_t*) packet;
 
 	CL_DEBUG("send preview to dvr status:%d.\n", status);
-	mock_dvr_preview_t_destroy(cmd);
+	nvmp_cmd_t_destroy(packet);
 	on_smts_dvr_client_send_preview(client->session, aclient, status);
 
 }
@@ -112,7 +112,7 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 	preview_packet->bitrate = DEFAULT_DVR_BITRATE;
 	preview_packet->frame_rate = DEFAULT_DVR_FRAMERATE;
 
-	r = mock_dvr_preview_t_encode(preview_packet);
+	r = nvmp_cmd_t_encode((abstract_cmd_t*)preview_packet);
 	/// 3. send preview msg.
 	r = tcp_client_send_msg((abstract_tcp_client_t*) dvr_client, (abstract_cmd_t*) preview_packet,
 			on_dvr_client_send_preview_msg_cb);
@@ -127,7 +127,7 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 int destroy_smts_frame(smts_frame_t *frame)
 {
 //	CL_DEBUG("free frame:%d,%d\n", frame->seqno, frame->type);
-	mock_dvr_frame_t_destroy((mock_dvr_frame_t*) frame->data);
+	nvmp_cmd_t_destroy((abstract_cmd_t*) frame->data);
 	FREE(frame);
 	return 0;
 }

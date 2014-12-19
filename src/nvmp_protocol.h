@@ -14,6 +14,14 @@
 /**
  * declare struct
  */
+struct abstract_cmd_s;
+
+typedef int (*cmd_destroy_fun)(struct abstract_cmd_s *cmd);
+typedef int (*cmd_decode_fun)(uv_buf_t *packet,struct abstract_cmd_s *cmd);
+typedef int (*cmd_encode_fun)(struct abstract_cmd_s *cmd);
+typedef int (*cmd_len_fun)(struct abstract_cmd_s *cmd);
+
+
 #define Int16_filed(name)	int16_t name;
 #define Int32_filed(name)	int32_t name;
 #define Int64_filed(name)	int64_t name;
@@ -29,9 +37,13 @@ typedef struct cmd_name##_s{					\
 	/** private
 	 *	total buf recv by socket or encode bufs.
 	 */											\
-	uv_buf_t *original_buf;						\
-	int32_t original_buf_len;					\
-	int32_t original_buf_ref_bit_map;			\
+	cmd_destroy_fun destroy_fun;				\
+	cmd_decode_fun 	decode_fun;					\
+	cmd_encode_fun 	encode_fun;					\
+	cmd_len_fun 	len_fun;					\
+	uv_buf_t 		*original_buf;				\
+	int32_t 		original_buf_len;			\
+	int32_t 		original_buf_ref_bit_map;	\
 	/* public */								\
 	void *data;									\
 	volatile int ref;/*ref count. destory it when ref equal zero.*/\
@@ -39,25 +51,23 @@ typedef struct cmd_name##_s{					\
 }cmd_name##_t;
 PROTOCOL_MAP(GEN_STRUCT, GEN_STRUCT_FILED, GEN_STRUCT_3FILED);
 
-
-typedef int (*cmd_destroy_fun)(abstract_cmd_t *cmd);
 /**
  * declare methods
  */
+/**
+ * public API.
+ */
 #define GEN_STRUCT_FILED_METHOD(type,name)
 #define GEN_STRUCT_3FILED_METHOD(type,name,len)
-#define GEN_STRUCT_METHOD(cmd_name,_packet,cmd,fileds,_fun)		\
-int cmd_name##_t_init(cmd_name##_t *t);							\
-int cmd_name##_t_len(cmd_name##_t *t);							\
-int cmd_name##_t_decode(uv_buf_t *packet,cmd_name##_t *t);		\
-int cmd_name##_t_encode(cmd_name##_t *t);						\
-int cmd_name##_t_increase_ref(cmd_name##_t *t);					\
-int cmd_name##_t_destroy(cmd_name##_t *t);						\
+#define GEN_STRUCT_METHOD(cmd_name,_packet,cmd,fileds,_fun)			\
+int cmd_name##_t_init(cmd_name##_t *t);								\
 
 PROTOCOL_MAP(GEN_STRUCT_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
-
-
-
+int nvmp_cmd_t_increase_ref(abstract_cmd_t *t);
+int nvmp_cmd_t_len(abstract_cmd_t *t);
+int nvmp_cmd_t_decode(uv_buf_t *packet,abstract_cmd_t *t);
+int nvmp_cmd_t_encode(abstract_cmd_t *t);
+int nvmp_cmd_t_destroy(abstract_cmd_t *t);
 
 #define PACKET_INVALID -1
 #define PACKET_LEN_FIELD_SIZE 4

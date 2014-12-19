@@ -14,7 +14,7 @@
 
 #define CHECK_RES_CMD(cmd,buf) assert((cmd) == decode_int32((buf)->base+4))
 
-#define TERMINATE_SEQNO 20
+#define TERMINATE_SEQNO 5
 
 typedef struct test_smts_client_s
 {

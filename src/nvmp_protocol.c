@@ -18,6 +18,16 @@
  * for mem watch.
  */
 #include "mem_guard.h"
+
+#define GEN_STRUCT_STATIC_METHOD(cmd_name,_packet,cmd,fileds,_fun)			\
+static int cmd_name##_t_len(abstract_cmd_t *t);							\
+static int cmd_name##_t_decode(uv_buf_t *packet,abstract_cmd_t *t);		\
+static int cmd_name##_t_encode(abstract_cmd_t *t);							\
+static int cmd_name##_t_destroy(abstract_cmd_t *t);						\
+
+PROTOCOL_MAP(GEN_STRUCT_STATIC_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
+
+
 /**
  * init packet
  */
@@ -36,6 +46,10 @@ int cmd_name##_t_init(cmd_name##_t *t){				\
 	t->cmd = pcmd;									\
 	fileds											\
 	/** private*/									\
+	t->destroy_fun=cmd_name##_t_destroy;			\
+	t->decode_fun=cmd_name##_t_decode;				\
+	t->encode_fun=cmd_name##_t_encode;				\
+	t->len_fun=cmd_name##_t_len;					\
 	t->original_buf = NULL;							\
 	t->original_buf_len = 0;						\
 	t->ref = 0;										\
@@ -59,10 +73,11 @@ PROTOCOL_MAP(GEN_STRUCT_INIT, GEN_STRUCT_ARGS_INIT, GEN_STRUCT_3ARGS_INIT);
 #define GEN_STRUCT_ARGS_LEN(type,name)			type##_len(name)
 #define GEN_STRUCT_3ARGS_LEN(type,name,length)	type##_len(name,length)
 #define GEN_STRUCT_LEN(cmd_name,_packet,cmd,fileds,_fun)		\
-int cmd_name##_t_len(cmd_name##_t *t){						\
-	int len = 0;											\
-	fileds													\
-	return len;												\
+int cmd_name##_t_len(abstract_cmd_t *at){						\
+	cmd_name##_t *t = (cmd_name##_t*)at;						\
+	int len = 0;												\
+	fileds														\
+	return len;													\
 }
 PROTOCOL_MAP(GEN_STRUCT_LEN, GEN_STRUCT_ARGS_LEN, GEN_STRUCT_3ARGS_LEN);
 
@@ -79,17 +94,18 @@ PROTOCOL_MAP(GEN_STRUCT_LEN, GEN_STRUCT_ARGS_LEN, GEN_STRUCT_3ARGS_LEN);
 
 #define GEN_STRUCT_ARGS_DECODE(type,name)		type##_decode(name)
 #define GEN_STRUCT_3ARGS_DECODE(type,name,arg)	type##_decode(name,arg)
-#define GEN_STRUCT_DECODE(cmd_name,packet,cmd,fileds,_fun)		\
-int cmd_name##_t_decode(uv_buf_t *packet_buf,cmd_name##_t *t){	\
-	char *buf = packet_buf->base;								\
-	fileds														\
+#define GEN_STRUCT_DECODE(cmd_name,packet,cmd,fileds,_fun)			\
+int cmd_name##_t_decode(uv_buf_t *packet_buf,abstract_cmd_t *at){	\
+	cmd_name##_t *t = (cmd_name##_t*)at;							\
+	char *buf = packet_buf->base;									\
+	fileds															\
 	/*private,ref packet buf which recv from socket to original_buf;*/\
-	t->original_buf = (uv_buf_t*)malloc(sizeof(uv_buf_t));		\
-	t->original_buf->base = packet_buf->base;					\
-	t->original_buf->len = packet_buf->len;						\
-	t->original_buf_len = 1;									\
-	t->packet_len += packet;									\
-	return 0;													\
+	t->original_buf = (uv_buf_t*)malloc(sizeof(uv_buf_t));			\
+	t->original_buf->base = packet_buf->base;						\
+	t->original_buf->len = packet_buf->len;							\
+	t->original_buf_len = 1;										\
+	t->packet_len += packet;										\
+	return 0;														\
 }
 
 PROTOCOL_MAP(GEN_STRUCT_DECODE, GEN_STRUCT_ARGS_DECODE, GEN_STRUCT_3ARGS_DECODE);
@@ -138,7 +154,7 @@ PROTOCOL_MAP(GEN_STRUCT_BUFS_INNER_ALLOC, GEN_STRUCT_ARGS_INNER_ALLOC, GEN_STRUC
 #define GEN_STRUCT_ARGS_ALLOC(type,name)		type##_alloc(name)
 #define GEN_STRUCT_3ARGS_ALLOC(type,name,arg)	type##_alloc(name,arg)
 #define GEN_STRUCT_BUFS_ALLOC(cmd_name,_packet,pcmd,fileds,_fun)		\
-int cmd_name##_t_bufs_alloc(cmd_name##_t *t){							\
+static int cmd_name##_t_bufs_alloc(cmd_name##_t *t){							\
 	int buf_len = 0,is_new = 1,buf_size = 0,i=0;						\
 	fileds																\
 	t->original_buf = (uv_buf_t*)malloc(buf_len*sizeof(uv_buf_t));		\
@@ -171,33 +187,47 @@ PROTOCOL_MAP(GEN_STRUCT_BUFS_ALLOC, GEN_STRUCT_ARGS_ALLOC, GEN_STRUCT_3ARGS_ALLO
 
 #define GEN_STRUCT_ARGS_ENCODE(type,name)		type##_encode(name)
 #define GEN_STRUCT_3ARGS_ENCODE(type,name,arg)	type##_encode(name,arg)
-#define GEN_STRUCT_ENCODE(cmd_name,packet_opt,pcmd,fileds,_fun)		\
-int cmd_name##_t_encode(cmd_name##_t *t){							\
-	int offset = 0,is_new=1;										\
-	int r = cmd_name##_t_bufs_alloc(t);								\
-	uv_buf_t *packet = t->original_buf;								\
-	char *buf;														\
-	t->packet_len = cmd_name##_t_len(t) - packet_opt;				\
-	t->cmd = pcmd;													\
-	fileds															\
-	t->packet_len += packet_opt;									\
-	t->ref = 0;														\
-	return 0;														\
+#define GEN_STRUCT_ENCODE(cmd_name,packet_opt,pcmd,fileds,_fun)				\
+int cmd_name##_t_encode(abstract_cmd_t *at){								\
+	cmd_name##_t *t=(cmd_name##_t*)at;										\
+	int offset = 0,is_new=1;												\
+	int r = cmd_name##_t_bufs_alloc(t);										\
+	uv_buf_t *packet = t->original_buf;										\
+	char *buf;																\
+	t->packet_len = cmd_name##_t_len((abstract_cmd_t*)t) - packet_opt;		\
+	t->cmd = pcmd;															\
+	fileds																	\
+	t->packet_len += packet_opt;											\
+	t->ref = 0;																\
+	return 0;																\
 }
 
 PROTOCOL_MAP(GEN_STRUCT_ENCODE, GEN_STRUCT_ARGS_ENCODE, GEN_STRUCT_3ARGS_ENCODE);
 
 /**
- * increase ref.
+ * public cmd API.
  */
-#define GEN_STRUCT_ARGS_INCREASE_REF(type,name)
-#define GEN_STRUCT_3ARGS_INCREASE_REF(type,name,arg)
-#define GEN_STRUCT_INCREASE_REF(cmd_name,packet_opt,pcmd,fileds,_fun)\
-int cmd_name##_t_increase_ref(cmd_name##_t *t){						\
-	t->ref ++;														\
-	return 0;														\
+int nvmp_cmd_t_increase_ref(abstract_cmd_t *t)
+{
+	t->ref++;
+	return 0;
 }
-PROTOCOL_MAP(GEN_STRUCT_INCREASE_REF,GEN_STRUCT_ARGS_INCREASE_REF,GEN_STRUCT_3ARGS_INCREASE_REF)
+int nvmp_cmd_t_len(abstract_cmd_t *t)
+{
+	return t->len_fun(t);
+}
+int nvmp_cmd_t_decode(uv_buf_t *packet, abstract_cmd_t *t)
+{
+	return t->decode_fun(packet, t);
+}
+int nvmp_cmd_t_encode(abstract_cmd_t *t)
+{
+	return t->encode_fun(t);
+}
+int nvmp_cmd_t_destroy(abstract_cmd_t *t)
+{
+	return t->destroy_fun(t);
+}
 
 /**
  * destroy packet.
@@ -212,7 +242,8 @@ PROTOCOL_MAP(GEN_STRUCT_INCREASE_REF,GEN_STRUCT_ARGS_INCREASE_REF,GEN_STRUCT_3AR
 #define GEN_STRUCT_ARGS_DESTROY(type,name)			type##_destroy(name)
 #define GEN_STRUCT_3ARGS_DESTROY(type,name,length)	type##_destroy(name,length)
 #define GEN_STRUCT_DESTROY(cmd_name,_packet,cmd,fileds,_fun)					\
-int cmd_name##_t_destroy(cmd_name##_t *t){										\
+int cmd_name##_t_destroy(abstract_cmd_t *at){									\
+	cmd_name##_t *t=(cmd_name##_t*)at;											\
 	if(t->ref > 0) {t->ref --;return 0;};										\
 	fileds																		\
 	/* private*/																\

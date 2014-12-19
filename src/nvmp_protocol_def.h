@@ -22,7 +22,7 @@
  * 			int cmd_name##_t_len();
  *			int cmd_name##_decode(uv_buf_t *packet,cmd_name##_t *t);
  *			int cmd_name##_encode(cmd_name##_t *t,uv_buf_t *packet);
- *			int int cmd_name##_t_destroy();
+ *			int cmd_name##_t_destroy();
  *
  *	packet_name : 	the name of packet.
  *	packet :  		PACK0 or PACK4.  	PACK0: packet_len contain self 4 byte.
@@ -64,10 +64,10 @@
  * 		method						|					mean
  * 	-------------------------------------------------------------------
  * 	int cmd_name##_t_init(cmd_name##_t *t)
- *	int cmd_name##_t_len(cmd_name##_t *t)						calculate total length of struct cmd_name##_t;
- *	int cmd_name##_decode(uv_buf_t *packet,cmd_name##_t *t)		decode cmd_name##_t from uv_buf_t.
- *	int cmd_name##_encode(cmd_name##_t *t,uv_buf_t *packet)		encode cmd_name##_t to uv_buf_t.
- *	int cmd_name##_t_destroy(cmd_name##_t *t)
+ *	int nvmp_cmd_t_len(abstract_cmd_t *t)						calculate total length of struct cmd_name##_t;
+ *	int nvmp_cmd_t_decode(uv_buf_t *packet,abstract_cmd_t *t)	decode cmd_name##_t from uv_buf_t.
+ *	int nvmp_cmd_t_encode(abstract_cmd_t *t,uv_buf_t *packet)	encode cmd_name##_t to uv_buf_t.
+ *	int nvmp_cmd_t_destroy(abstract_cmd_t *t)					destory cmd_name##_t.
  * @endcode
  * 	all of protocol method implement in {@link nvmp_protocol.h}.
  */
@@ -167,6 +167,20 @@ T(mock_dvr_frame,PACK4,								\
   ARG3(BinaryBufRef,frame,t->packet_len-24+PACK4),	\
   NULL												\
 )													\
-
+/**
+ * test send PTZ cmd
+ */													\
+T(test_PTZ_cmd,PACK0,								\
+  0x00018010,										\
+  PROTOCOL_HEAD_FILED(ARG2)							\
+  ARG2(Int32,ptz),									\
+  nvmp_channel										\
+)													\
+T(test_PTZ_cmd_res,PACK0,							\
+  0x80018010,										\
+  PROTOCOL_HEAD_FILED(ARG2)							\
+  ARG2(Int32,status),								\
+  NULL												\
+)													\
 
 #endif /* NVMP_PROTOCOL_DEF_H_ */
