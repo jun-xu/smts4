@@ -195,17 +195,30 @@ void on_smts_dvr_client_send_preview(smts_session_t* s, abstract_tcp_client_t *c
 
 }
 
+static void on_send_cmd_to_dvr_cb(struct abstract_tcp_client_s *client, abstract_cmd_t *packet, int status)
+{
+	CL_DEBUG("send cmd:0x%x to dvr with channel status:%d.\n",packet->cmd,status);
+	nvmp_cmd_t_destroy(packet);
+}
+
+/**
+ * send cmd to dvr.
+ */
 int media_client_send_cmd(smts_client_t *client, abstract_cmd_t* cmd)
 {
 	int r = 0;
-	if (client->session == NULL) {
+	smts_session_t *s = client->session;
+	if (s == NULL) {
+		CL_ERROR("fd:%d client's is null.\n",client->socket.io_watcher.fd);
 		r = SMTS_CLIENT_NO_START;
-
 		return r;
 	}
-	/// add cmd package ref.
+	///must be add cmd package ref.
 	nvmp_cmd_t_increase_ref(cmd);
-
+	r = tcp_client_send_msg((abstract_tcp_client_t*)&s->dvr,cmd,on_send_cmd_to_dvr_cb);
+	if(r != 0){
+		nvmp_cmd_t_destroy(cmd);
+	}
 	return r;
 
 }

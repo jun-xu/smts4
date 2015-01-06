@@ -80,7 +80,7 @@
 #define PREVIEW_CMD 0x00050104
 #define PREVIEW_RES_CMD 0x80050101
 #define SEND_FRAME_CMD 0x80050102
-
+#define COMMON_RES_CMD 0x80000001
 
 #define PROTOCOL_TOP_FILED(ARG2)					\
 	/* packet length */								\
@@ -174,10 +174,10 @@ T(test_PTZ_cmd,PACK0,								\
   0x00018010,										\
   PROTOCOL_HEAD_FILED(ARG2)							\
   ARG2(Int32,ptz),									\
-  nvmp_channel										\
+  msg_channel										\
 )													\
-T(test_PTZ_cmd_res,PACK0,							\
-  0x80018010,										\
+T(common_res,PACK0,									\
+  COMMON_RES_CMD,									\
   PROTOCOL_HEAD_FILED(ARG2)							\
   ARG2(Int32,status),								\
   NULL												\

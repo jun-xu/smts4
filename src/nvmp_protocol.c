@@ -19,11 +19,15 @@
  */
 #include "mem_guard.h"
 
+
+/**
+ * declare public API methods
+ */
 #define GEN_STRUCT_STATIC_METHOD(cmd_name,_packet,cmd,fileds,_fun)			\
-static int cmd_name##_t_len(abstract_cmd_t *t);							\
-static int cmd_name##_t_decode(uv_buf_t *packet,abstract_cmd_t *t);		\
+static int cmd_name##_t_len(abstract_cmd_t *t);								\
+static int cmd_name##_t_decode(uv_buf_t *packet,abstract_cmd_t *t);			\
 static int cmd_name##_t_encode(abstract_cmd_t *t);							\
-static int cmd_name##_t_destroy(abstract_cmd_t *t);						\
+static int cmd_name##_t_destroy(abstract_cmd_t *t);							\
 
 PROTOCOL_MAP(GEN_STRUCT_STATIC_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
 

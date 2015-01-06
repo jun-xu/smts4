@@ -31,31 +31,28 @@ typedef int (*cmd_len_fun)(struct abstract_cmd_s *cmd);
 
 #define GEN_STRUCT_FILED(type,name)			type##_filed(name)
 #define GEN_STRUCT_3FILED(type,name,arg) 	type##_filed(name,arg)
-#define GEN_STRUCT(cmd_name,_packet,_cmd,fileds,_fun)	\
-typedef struct cmd_name##_s{					\
-	char *name;	/*private*/						\
+#define GEN_STRUCT(cmd_name,_packet,_cmd,fileds,_fun)			\
+typedef struct cmd_name##_s{									\
+	char 			*name;	/*private*/							\
 	/** private
 	 *	total buf recv by socket or encode bufs.
-	 */											\
-	cmd_destroy_fun destroy_fun;				\
-	cmd_decode_fun 	decode_fun;					\
-	cmd_encode_fun 	encode_fun;					\
-	cmd_len_fun 	len_fun;					\
-	uv_buf_t 		*original_buf;				\
-	int32_t 		original_buf_len;			\
-	int32_t 		original_buf_ref_bit_map;	\
-	/* public */								\
-	void *data;									\
-	volatile int ref;/*ref count. destory it when ref equal zero.*/\
-	fileds										\
+	 */															\
+	cmd_destroy_fun destroy_fun;								\
+	cmd_decode_fun 	decode_fun;									\
+	cmd_encode_fun 	encode_fun;									\
+	cmd_len_fun 	len_fun;									\
+	uv_buf_t 		*original_buf;								\
+	int32_t 		original_buf_len;							\
+	int32_t 		original_buf_ref_bit_map;					\
+	/* public */												\
+	void 			*data;										\
+	volatile int 	ref;/*ref count. destory it when ref equal zero.*/\
+	fileds														\
 }cmd_name##_t;
 PROTOCOL_MAP(GEN_STRUCT, GEN_STRUCT_FILED, GEN_STRUCT_3FILED);
 
 /**
- * declare methods
- */
-/**
- * public API.
+ * declare public API methods
  */
 #define GEN_STRUCT_FILED_METHOD(type,name)
 #define GEN_STRUCT_3FILED_METHOD(type,name,len)

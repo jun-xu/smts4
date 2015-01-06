@@ -53,17 +53,32 @@ int destroy_test_mock_dvr(test_mock_dvr_t *dvr, int status)
 	return 0;
 }
 
-static int moc_dvr_dispatch_packet(abstract_tcp_client_t *client, uv_buf_t *buf, int status)
+static int mock_dvr_dispatch_packet(abstract_tcp_client_t *client, uv_buf_t *buf, int status)
 {
 	int r;
 	test_mock_dvr_t* dvr = (test_mock_dvr_t*) client;
 	if (status == 0) {
 
 		int32_t cmd = decode_int32(buf->base + 4);
+		CL_DEBUG("mock dvr recv cmd:0x%x\n",cmd);
 		switch (cmd) {
-		PROTOCOL_MAP(GEN_DISPATCH_SWTICH_CASE, GEN_SWITCH_CASE_ARGS, GEN_SWITCH_CASE_3ARGS)
+//		PROTOCOL_MAP(GEN_DISPATCH_SWTICH_CASE, GEN_SWITCH_CASE_ARGS, GEN_SWITCH_CASE_3ARGS)
+		case 0x00018001: {
+			mock_dvr_preview_t *t = (mock_dvr_preview_t*) malloc(sizeof(mock_dvr_preview_t));
+			r = mock_dvr_preview_t_init(t);
+			r = nvmp_cmd_t_decode(buf, (abstract_cmd_t*) t);
+			if (r != 0) {
+				printf("decode packet:%s error.\n", "mock_dvr_preview");
+			} else {
+				/*callback fun */
+				cmd_imp f = (mock_dvr_preview_impl) == ((void*) 0) ? fun_no_impl : (mock_dvr_preview_impl);
+				f(client, (abstract_cmd_t*) t);
+			}
+			nvmp_cmd_t_destroy((abstract_cmd_t*) t);
+		}
+			break;
 		default:
-			CL_ERROR("ignore cmd:%d.\n", cmd);
+			CL_ERROR("mock dvr ignore cmd:%x.\n", cmd);
 			FREE(buf->base);
 		}
 	} else {
@@ -91,7 +106,7 @@ static void on_mock_dvr_connect_cb(uv_stream_t* server, int status)
 		return;
 	}
 	CL_DEBUG("new client fd:%d connection.\n", socket->io_watcher.fd);
-	r = tcp_client_start_read((abstract_tcp_client_t*) dvr, moc_dvr_dispatch_packet);
+	r = tcp_client_start_read((abstract_tcp_client_t*) dvr, mock_dvr_dispatch_packet);
 	if (r != 0) {
 		CL_ERROR("start read error:%d,%s\n", r, smts_strerror(r));
 		close_abstract_tcp_client((abstract_tcp_client_t*) dvr, mock_dvr_close_cb);
@@ -144,11 +159,11 @@ static void dvr_send_frame0(uv_timer_t* handle)
 	}
 	frame->st = dvr->seqno * dvr->interval;
 //	CL_DEBUG("mock dvr send frame:%d\n",frame->seqno);
-	assert(0 == nvmp_cmd_t_encode((abstract_cmd_t*)frame));
+	assert(0 == nvmp_cmd_t_encode((abstract_cmd_t* )frame));
 	r = tcp_client_send_msg((abstract_tcp_client_t*) dvr, (abstract_cmd_t*) frame, on_mock_dvr_send_frame_cb);
 	if (r != 0) {
 		CL_ERROR("mock dvr send frame error:%d,%s\n", r, smts_strerror(r));
-		nvmp_cmd_t_destroy((abstract_cmd_t*)frame);
+		nvmp_cmd_t_destroy((abstract_cmd_t*) frame);
 		destroy_test_mock_dvr(dvr, r);
 	}
 	dvr->seqno++;

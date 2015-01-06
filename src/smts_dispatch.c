@@ -28,6 +28,13 @@ int dispatch_packet(abstract_tcp_client_t *client, uv_buf_t *buf, int status)
 	if (status == 0) {
 		int32_t cmd = decode_int32(buf->base + 4);
 		switch (cmd) {
+		/**
+		 * 1. new cmd packet. 	e.g. preview_cmd_t *t = (preview_cmd_t*)malloc(sizeof(preview_cmd_t));			\
+		 * 2. init packet. 		e.g. preview_cmd_t_init(t);												\
+		 * 3. decode packet. 	e.g. decode(buf,(abstract_cmd_t*)t);
+		 * 4. call function.  	e.g. fun(client,(abstract_cmd_t*)t)
+		 * 5. destroy packet. 	e.g. nvmp_cmd_t_destroy((abstract_cmd_t*)t)
+		 */
 		PROTOCOL_MAP(GEN_DISPATCH_SWTICH_CASE, GEN_SWITCH_CASE_ARGS, GEN_SWITCH_CASE_3ARGS)
 		default:
 			CL_ERROR("ignore cmd:%d.\n", cmd);

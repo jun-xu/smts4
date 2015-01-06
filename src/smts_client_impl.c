@@ -104,13 +104,13 @@ void smts_client_send_preview_res(smts_client_t *client, int status)
 		preview_res->contrast = 0;
 		preview_res->saturation = 0;
 //		preview_cmd_res_t_bufs_alloc(preview_res);
-		nvmp_cmd_t_encode((abstract_cmd_t*)preview_res);
+		nvmp_cmd_t_encode((abstract_cmd_t*) preview_res);
 		client->status = SMTS_CLIENT_ON_SEND_PREVIEW_RES; // to avoid repeat send preview response
 		r = tcp_client_send_msg((abstract_tcp_client_t*) client, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_preview_res_cb_slient);
 		if (r != 0) {
 			CL_ERROR("send preview res error:%d,%s.\n", r, smts_strerror(r));
-			nvmp_cmd_t_destroy((abstract_cmd_t*)preview_res);
+			nvmp_cmd_t_destroy((abstract_cmd_t*) preview_res);
 			//TODO: send error;
 		}
 	}
@@ -182,20 +182,38 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 		preview_res->brightness = 0;
 		preview_res->contrast = 0;
 		preview_res->saturation = 0;
-		nvmp_cmd_t_encode((abstract_cmd_t*)preview_res);
+		nvmp_cmd_t_encode((abstract_cmd_t*) preview_res);
 		r = tcp_client_send_msg((abstract_tcp_client_t*) aclient, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_error_preview_res_cb);
+		if (r != 0) {
+			nvmp_cmd_t_destroy((abstract_cmd_t*)preview_res);
+		}
 	}
 	return r;
 }
 
-int nvmp_channel(abstract_tcp_client_t* aclient, abstract_cmd_t *cmd)
+static void on_smts_client_send_res_cb(abstract_tcp_client_t *aclient, abstract_cmd_t *packet, int status)
+{
+	nvmp_cmd_t_destroy(packet);
+}
+
+int msg_channel(abstract_tcp_client_t* aclient, abstract_cmd_t *cmd)
 {
 	int r = 0;
+	common_res_t *res_cmd;
 	smts_client_t *client = (smts_client_t*) aclient;
 	r = media_client_send_cmd(client, cmd);
 	if (r != 0) {
 		CL_ERROR("send cmd error:%d,%s", r, smts_strerror(r));
+	}
+
+	res_cmd = (common_res_t*) malloc(sizeof(common_res_t));
+	res_cmd->status = r;
+	common_res_t_init(res_cmd);
+	nvmp_cmd_t_encode((abstract_cmd_t*) res_cmd);
+	r = tcp_client_send_msg((abstract_tcp_client_t*) aclient, (abstract_cmd_t*) res_cmd, on_smts_client_send_res_cb);
+	if (r != 0) {
+		nvmp_cmd_t_destroy((abstract_cmd_t*)res_cmd);
 	}
 	return r;
 }

@@ -72,6 +72,6 @@ int nvmp_smts_preview(abstract_tcp_client_t* client, abstract_cmd_t *preview_cmd
  * inherit from {@link cmd_imp}
  * transparent channel. recv cmd packet from client and send to dvr.
  */
-int nvmp_channel(abstract_tcp_client_t* aclient, abstract_cmd_t *ptz_cmd);
+int msg_channel(abstract_tcp_client_t* aclient, abstract_cmd_t *ptz_cmd);
 
 #endif /* SMTS_CLIENT_IMPL_H_ */
