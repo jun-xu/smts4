@@ -64,12 +64,12 @@
  * 		method						|					mean
  * 	-------------------------------------------------------------------
  * 	int cmd_name##_t_init(cmd_name##_t *t)
- *	int nvmp_cmd_t_len(abstract_cmd_t *t)						calculate total length of struct cmd_name##_t;
- *	int nvmp_cmd_t_decode(uv_buf_t *packet,abstract_cmd_t *t)	decode cmd_name##_t from uv_buf_t.
- *	int nvmp_cmd_t_encode(abstract_cmd_t *t,uv_buf_t *packet)	encode cmd_name##_t to uv_buf_t.
- *	int nvmp_cmd_t_destroy(abstract_cmd_t *t)					destory cmd_name##_t.
+ *	int proto_cmd_t_len(abstract_cmd_t *t)						calculate total length of struct cmd_name##_t;
+ *	int proto_cmd_t_decode(uv_buf_t *packet,abstract_cmd_t *t)	decode cmd_name##_t from uv_buf_t.
+ *	int proto_cmd_t_encode(abstract_cmd_t *t,uv_buf_t *packet)	encode cmd_name##_t to uv_buf_t.
+ *	int proto_cmd_t_destroy(abstract_cmd_t *t)					destory cmd_name##_t.
  * @endcode
- * 	all of protocol method implement in {@link nvmp_protocol.h}.
+ * 	all of protocol method implement in {@link smts_proto.h}.
  */
 #define SMTS_PROTO_DEFINE
 
@@ -113,7 +113,7 @@ T(preview_cmd,PACK0,								\
   ARG2(Int16,channel_no)							\
   /* frame_mode: 0:primary  1:sub*/					\
   ARG2(Int32,frame_mode),							\
-  nvmp_smts_preview									\
+  smts_start_preview								\
 )													\
 /**
  * preview response to client.

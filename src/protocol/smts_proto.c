@@ -18,7 +18,6 @@
  */
 #include "mem_guard.h"
 
-
 /**
  * declare public API methods
  */
@@ -29,7 +28,6 @@ static int cmd_name##_t_encode(abstract_cmd_t *t);							\
 static int cmd_name##_t_destroy(abstract_cmd_t *t);							\
 
 PROTOCOL_MAP(GEN_STRUCT_STATIC_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
-
 
 /**
  * init packet
@@ -47,7 +45,6 @@ PROTOCOL_MAP(GEN_STRUCT_STATIC_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILE
 int cmd_name##_t_init(cmd_name##_t *t){				\
 	t->name = #cmd_name;							\
 	t->cmd = pcmd;									\
-	fileds											\
 	/** private*/									\
 	t->destroy_fun=cmd_name##_t_destroy;			\
 	t->decode_fun=cmd_name##_t_decode;				\
@@ -58,6 +55,8 @@ int cmd_name##_t_init(cmd_name##_t *t){				\
 	t->ref = 0;										\
 	t->original_buf_ref_bit_map = 0;				\
 	t->data=NULL;									\
+	/** public **/									\
+	fileds											\
 	return 0;										\
 }
 

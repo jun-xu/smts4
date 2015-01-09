@@ -9,10 +9,14 @@ BIN_DIR = $(ROOT_DIR)bin/
 LIB_PATH = $(BIN_DIR)
 # include dir
 INCLUDE_DIR = $(ROOT_DIR)include/
+
 # src dir
-SRC_DIR = $(ROOT_DIR)src/
-TEST_DIR = $(ROOT_DIR)test/
-SRC_FILES = $(foreach dir,$(SRC_DIR),$(wildcard $(dir)*.c))
+SRC_DIR=$(ROOT_DIR)src/
+PROTO_DIR=$(SRC_DIR)protocol/
+COMMON_DIR=$(SRC_DIR)common/
+MOCK_DIR=$(SRC_DIR)mock/
+TEST_DIR=$(ROOT_DIR)test/
+SRC_FILES=$(foreach dir,$(SRC_DIR) $(PROTO_DIR) $(COMMON_DIR) $(MOCK_DIR),$(wildcard $(dir)*.c))
 # deps dir
 DEPS_ROOT_DIRS = $(ROOT_DIR)deps/
 
@@ -38,7 +42,7 @@ GYP_SOURCE_DEPS_DIR = $(DEPS_ROOT_DIRS)$(GYP_NAME_APP)/
 CXX   =  gcc
 OPTI  = -o2
 CXXFLAGS = -Wall -I. -fPIC -fprofile-arcs -ftest-coverage
-INCPATHS = -I$(SRC_DIR) -I$(INCLUDE_DIR)
+INCPATHS = -I$(SRC_DIR) -I$(INCLUDE_DIR) -I$(PROTO_DIR) -I$(COMMON_DIR) -I$(MOCK_DIR)
 LIBS =-l$(LIBUV_NAME_APP)
 
 GIT_SUBMODULES_EXISTED=$(wildcard .gitmodules)
