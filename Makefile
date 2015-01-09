@@ -14,7 +14,7 @@ INCLUDE_DIR = $(ROOT_DIR)include/
 SRC_DIR=$(ROOT_DIR)src/
 TEST_DIR=$(ROOT_DIR)test/
 
-ALL_SRC_DIRS=$(SRC_DIR) $(SRC_DIR)protocol/ $(SRC_DIR)common/ $(SRC_DIR)mock/
+ALL_SRC_DIRS=$(SRC_DIR) $(SRC_DIR)protocol/ $(SRC_DIR)common/ $(SRC_DIR)mock/ $(TEST_DIR)
 
 SRC_FILES=$(foreach dir,$(ALL_SRC_DIRS),$(wildcard $(dir)*.c))
 # deps dir
