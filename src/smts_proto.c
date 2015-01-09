@@ -1,5 +1,5 @@
 /*
- * smts_nvmp_protocol.c
+ * smts_protocol.c
  *
  *  Created on: 下午1:04:49
  *      Author: ss
@@ -9,8 +9,7 @@
 #include <stdio.h>
 #include "css_logger.h"
 #include "uv/uv.h"
-#include "nvmp_protocol.h"
-#include "nvmp_protocol_def.h"
+#include "smts_proto.h"
 #include "encode_decode_util.h"
 #include "smts_session.h"
 
@@ -211,24 +210,24 @@ PROTOCOL_MAP(GEN_STRUCT_ENCODE, GEN_STRUCT_ARGS_ENCODE, GEN_STRUCT_3ARGS_ENCODE)
 /**
  * public cmd API.
  */
-int nvmp_cmd_t_increase_ref(abstract_cmd_t *t)
+int proto_cmd_t_increase_ref(abstract_cmd_t *t)
 {
 	t->ref++;
 	return 0;
 }
-int nvmp_cmd_t_len(abstract_cmd_t *t)
+int proto_cmd_t_len(abstract_cmd_t *t)
 {
 	return t->len_fun(t);
 }
-int nvmp_cmd_t_decode(uv_buf_t *packet, abstract_cmd_t *t)
+int proto_cmd_t_decode(uv_buf_t *packet, abstract_cmd_t *t)
 {
 	return t->decode_fun(packet, t);
 }
-int nvmp_cmd_t_encode(abstract_cmd_t *t)
+int proto_cmd_t_encode(abstract_cmd_t *t)
 {
 	return t->encode_fun(t);
 }
-int nvmp_cmd_t_destroy(abstract_cmd_t *t)
+int proto_cmd_t_destroy(abstract_cmd_t *t)
 {
 	return t->destroy_fun(t);
 }

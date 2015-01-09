@@ -67,7 +67,7 @@ int stop_smts_client(smts_client_t *client, int status);
 /**
  * inherit from {@link cmd_imp}
  */
-int nvmp_smts_preview(abstract_tcp_client_t* client, abstract_cmd_t *preview_cmd);
+int smts_start_preview(abstract_tcp_client_t* client, abstract_cmd_t *preview_cmd);
 /**
  * inherit from {@link cmd_imp}
  * transparent channel. recv cmd packet from client and send to dvr.

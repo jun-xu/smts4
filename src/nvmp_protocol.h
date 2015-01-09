@@ -60,11 +60,6 @@ PROTOCOL_MAP(GEN_STRUCT, GEN_STRUCT_FILED, GEN_STRUCT_3FILED);
 int cmd_name##_t_init(cmd_name##_t *t);								\
 
 PROTOCOL_MAP(GEN_STRUCT_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)
-int nvmp_cmd_t_increase_ref(abstract_cmd_t *t);
-int nvmp_cmd_t_len(abstract_cmd_t *t);
-int nvmp_cmd_t_decode(uv_buf_t *packet,abstract_cmd_t *t);
-int nvmp_cmd_t_encode(abstract_cmd_t *t);
-int nvmp_cmd_t_destroy(abstract_cmd_t *t);
 
 #define PACKET_INVALID -1
 #define PACKET_LEN_FIELD_SIZE 4

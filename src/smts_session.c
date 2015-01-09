@@ -125,7 +125,7 @@ void on_smts_client_send_frame(smts_session_t* session, smts_client_t *client, s
 	frame->ref--;
 	if (frame->ref == 0) {
 		smts_frame_t *f = (smts_frame_t *) frame->data;
-		nvmp_cmd_t_destroy((abstract_cmd_t*)frame);
+		proto_cmd_t_destroy((abstract_cmd_t*)frame);
 		destroy_smts_frame(f);
 	}
 }
@@ -151,7 +151,7 @@ void on_smts_dvr_client_recv_frame(smts_session_t* s, smts_frame_t *frame, int s
 		frame_res->frame.len = frame->frame_data.len;
 		frame_res->frame_type = frame->type;
 		frame_res->data = frame;
-		nvmp_cmd_t_encode((abstract_cmd_t*)frame_res);
+		proto_cmd_t_encode((abstract_cmd_t*)frame_res);
 		frame_res->ref += s->client_size;
 		QUEUE_FOREACH(q,&s->client)
 		{
@@ -198,7 +198,7 @@ void on_smts_dvr_client_send_preview(smts_session_t* s, abstract_tcp_client_t *c
 static void on_send_cmd_to_dvr_cb(struct abstract_tcp_client_s *client, abstract_cmd_t *packet, int status)
 {
 	CL_DEBUG("send cmd:0x%x to dvr with channel status:%d.\n",packet->cmd,status);
-	nvmp_cmd_t_destroy(packet);
+	proto_cmd_t_destroy(packet);
 }
 
 /**
@@ -214,10 +214,10 @@ int media_client_send_cmd(smts_client_t *client, abstract_cmd_t* cmd)
 		return r;
 	}
 	///must be add cmd package ref.
-	nvmp_cmd_t_increase_ref(cmd);
+	proto_cmd_t_increase_ref(cmd);
 	r = tcp_client_send_msg((abstract_tcp_client_t*)&s->dvr,cmd,on_send_cmd_to_dvr_cb);
 	if(r != 0){
-		nvmp_cmd_t_destroy(cmd);
+		proto_cmd_t_destroy(cmd);
 	}
 	return r;
 

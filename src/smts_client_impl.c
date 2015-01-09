@@ -85,7 +85,7 @@ static void on_smts_client_send_preview_res_cb_slient(abstract_tcp_client_t *acl
 {
 //	preview_cmd_res_t *preview_res = (preview_cmd_res_t*) packet;
 	smts_client_t *smts_client;
-	nvmp_cmd_t_destroy(packet);
+	proto_cmd_t_destroy(packet);
 
 	CL_DEBUG("send preview res to client:%d status:%d\n", aclient->socket.io_watcher.fd, status);
 	smts_client = (smts_client_t*) aclient;
@@ -104,13 +104,13 @@ void smts_client_send_preview_res(smts_client_t *client, int status)
 		preview_res->contrast = 0;
 		preview_res->saturation = 0;
 //		preview_cmd_res_t_bufs_alloc(preview_res);
-		nvmp_cmd_t_encode((abstract_cmd_t*) preview_res);
+		proto_cmd_t_encode((abstract_cmd_t*) preview_res);
 		client->status = SMTS_CLIENT_ON_SEND_PREVIEW_RES; // to avoid repeat send preview response
 		r = tcp_client_send_msg((abstract_tcp_client_t*) client, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_preview_res_cb_slient);
 		if (r != 0) {
 			CL_ERROR("send preview res error:%d,%s.\n", r, smts_strerror(r));
-			nvmp_cmd_t_destroy((abstract_cmd_t*) preview_res);
+			proto_cmd_t_destroy((abstract_cmd_t*) preview_res);
 			//TODO: send error;
 		}
 	}
@@ -153,14 +153,14 @@ static void on_smts_client_send_error_preview_res_cb(abstract_tcp_client_t *acli
 {
 	smts_client_t *smts_client = (smts_client_t*) aclient;
 //	preview_cmd_res_t *preview_res = (preview_cmd_res_t*) packet;
-	nvmp_cmd_t_destroy(packet);
+	proto_cmd_t_destroy(packet);
 	stop_smts_client(smts_client, status);
 }
 
 /**
  * start preview.
  */
-int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cmd)
+int smts_start_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cmd)
 {
 
 	preview_cmd_t *play_cmd = (preview_cmd_t*) preview_cmd;
@@ -182,11 +182,11 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 		preview_res->brightness = 0;
 		preview_res->contrast = 0;
 		preview_res->saturation = 0;
-		nvmp_cmd_t_encode((abstract_cmd_t*) preview_res);
+		proto_cmd_t_encode((abstract_cmd_t*) preview_res);
 		r = tcp_client_send_msg((abstract_tcp_client_t*) aclient, (abstract_cmd_t*) preview_res,
 				on_smts_client_send_error_preview_res_cb);
 		if (r != 0) {
-			nvmp_cmd_t_destroy((abstract_cmd_t*)preview_res);
+			proto_cmd_t_destroy((abstract_cmd_t*)preview_res);
 		}
 	}
 	return r;
@@ -194,7 +194,7 @@ int nvmp_smts_preview(abstract_tcp_client_t* aclient, abstract_cmd_t *preview_cm
 
 static void on_smts_client_send_res_cb(abstract_tcp_client_t *aclient, abstract_cmd_t *packet, int status)
 {
-	nvmp_cmd_t_destroy(packet);
+	proto_cmd_t_destroy(packet);
 }
 
 int msg_channel(abstract_tcp_client_t* aclient, abstract_cmd_t *cmd)
@@ -210,10 +210,10 @@ int msg_channel(abstract_tcp_client_t* aclient, abstract_cmd_t *cmd)
 	res_cmd = (common_res_t*) malloc(sizeof(common_res_t));
 	res_cmd->status = r;
 	common_res_t_init(res_cmd);
-	nvmp_cmd_t_encode((abstract_cmd_t*) res_cmd);
+	proto_cmd_t_encode((abstract_cmd_t*) res_cmd);
 	r = tcp_client_send_msg((abstract_tcp_client_t*) aclient, (abstract_cmd_t*) res_cmd, on_smts_client_send_res_cb);
 	if (r != 0) {
-		nvmp_cmd_t_destroy((abstract_cmd_t*)res_cmd);
+		proto_cmd_t_destroy((abstract_cmd_t*)res_cmd);
 	}
 	return r;
 }

@@ -29,15 +29,15 @@
 
 //public API
 //#ifndef SMTS_TEST
-//#define CL_DEBUG(...)   CL_LOG(LL_DEBUG, __VA_ARGS__)	//CL_DEBUG(char *fmt,...)
-//#define CL_INFO(...)  	CL_LOG(LL_INFO, __VA_ARGS__)	//CL_INFO(char *fmt,...)
-//#define CL_WARN(...)  	CL_LOG(LL_WARN, __VA_ARGS__)	//CL_WARN(char *fmt,...)
-//#define CL_ERROR(...) 	CL_LOG(LL_ERROR, __VA_ARGS__)	//CL_ERROR(char *fmt,...)
+#define CL_DEBUG(...)   CL_LOG(LL_DEBUG, __VA_ARGS__)	//CL_DEBUG(char *fmt,...)
+#define CL_INFO(...)  	CL_LOG(LL_INFO, __VA_ARGS__)	//CL_INFO(char *fmt,...)
+#define CL_WARN(...)  	CL_LOG(LL_WARN, __VA_ARGS__)	//CL_WARN(char *fmt,...)
+#define CL_ERROR(...) 	CL_LOG(LL_ERROR, __VA_ARGS__)	//CL_ERROR(char *fmt,...)
 //#else
-#define CL_DEBUG printf
-#define CL_INFO printf
-#define CL_WARN printf
-#define CL_ERROR printf
+//#define CL_DEBUG printf
+//#define CL_INFO printf
+//#define CL_WARN printf
+//#define CL_ERROR printf
 //#endif
 // private...
 #define DEFAULT_LOG_DIR "./logs/"

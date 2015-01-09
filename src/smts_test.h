@@ -33,9 +33,9 @@ typedef enum
 #ifdef SMTS_TEST
 #define SMTS_TEST_CASES(XX)  			\
 	XX(tcp_server,0)					\
-	XX(css_logger_suite,1)				\
+	XX(css_logger_suite,0)				\
 	XX(struct_encode_decode_suite,0)	\
-	XX(preview_suite,0)					\
+	XX(preview_suite,1)					\
 	XX(session_manager_suite,0)			\
 	XX(dvrs_info_suite,0)				\
 	XX(mem_guard_suite,0)				\
