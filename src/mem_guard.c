@@ -79,10 +79,23 @@ void *malloc_guard(char *file, int32_t line, const char *fun, size_t s)
 	return ptr;
 }
 
+void clear_guard()
+{
+	QUEUE *q;
+	malloc_entity *c = NULL;
+	QUEUE_FOREACH(q,&pool.entity)
+	{
+		c = QUEUE_DATA(q, malloc_entity, q);
+		FREE(c->ptr);
+	}
+}
+
 void free_guard(void *ptr)
 {
 	QUEUE *q;
 	malloc_entity *c = NULL;
+	if (ptr == NULL)
+		return;
 	uv_mutex_lock(&mem_mutex);
 	QUEUE_FOREACH(q,&pool.entity)
 	{
@@ -121,7 +134,7 @@ void printf_all_ptrs()
 		}
 		count++;
 	}
-	CL_DEBUG("------------total:%d ptrs not free!.\n-------------", count);
+	CL_DEBUG("------------total:%d ptrs not free!.-------------\n", count);
 }
 
 #include <assert.h>

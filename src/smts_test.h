@@ -14,6 +14,8 @@
 #include <stddef.h>
 #include <string.h>
 #include "smts_util.h"
+#include "css_logger.h"
+#include "mem_guard.h"
 /**
  * test case function interface.
  */
@@ -31,9 +33,9 @@ typedef enum
 #ifdef SMTS_TEST
 #define SMTS_TEST_CASES(XX)  			\
 	XX(tcp_server,0)					\
-	XX(css_logger_suite,0)				\
+	XX(css_logger_suite,1)				\
 	XX(struct_encode_decode_suite,0)	\
-	XX(preview_suite,1)					\
+	XX(preview_suite,0)					\
 	XX(session_manager_suite,0)			\
 	XX(dvrs_info_suite,0)				\
 	XX(mem_guard_suite,0)				\
@@ -73,21 +75,28 @@ my_test_case_t suite[] = {
 SMTS_TEST_CASES(CTEST_ENTITY) { 0, 0, 0 } };
 
 #define PRINTF_TEST_CAST_HEADER(name)	\
-	printf("Running test_case: test_%s\n---------------------------------------------------\n",(name))
+	printf(CL_CLR(GREEN,"Running test_case: test_%s\n---------------------------------------------------\n"),(name))
 
 #define PRINTF_TEST_CASE_TAIL(name,cost)		\
-	printf("Test end of test case:%s , cost:%ldms.\n---------------------------------------------------\n\n",(name),(cost))
+	printf(CL_CLR(GREEN,"Test end of test case:%s , cost:") 				\
+		   CL_CLR(MAGENTA,"%ldms") CL_CLR(GREEN,".\n---------------------------------------------------\n\n"),(name),(cost))
 
 #define PRINTF_DO_TEST_HEADER()				 \
-do {																	\
-	printf("---------------------------------------------------\n");	\
-	printf("   R U N N I N G    T E S T S \n");							\
-	printf("---------------------------------------------------\n\n");	\
+do {																					\
+	printf(CL_CLR(GREEN,"---------------------------------------------------\n"));		\
+	printf(CL_CLR(GREEN,"   R U N N I N G    T E S T S \n"));							\
+	printf(CL_CLR(GREEN,"---------------------------------------------------\n\n"));	\
 }while(0)
 
-#define PRINTF_my_DO_TEST_TAIL(t,active,ignore,total)					\
+#define PRINTF_my_DO_TEST_TAIL(t,active,ignore,total)						\
 do{																			\
-	printf("\nTotal %d test case, active:%d, skipped:%d, total cost:%ldms.\n", (t), (active), (ignore), (total));  \
+	printf(CL_CLR(GREEN,"\nTotal ") 										\
+		   CL_CLR(MAGENTA,"%d") 											\
+		   CL_CLR(GREEN," test case, active:")								\
+		   CL_CLR(MAGENTA,"%d")	CL_CLR(GREEN,", skipped:")					\
+		   CL_CLR(RED,"%d") CL_CLR(GREEN,", total cost:")					\
+		   CL_CLR(MAGENTA,"%ldms")											\
+		   CL_CLR(GREEN,".\n"), (t), (active), (ignore), (total));  		\
 }while(0)
 
 static long difftimeval(struct timeval* tv1, struct timeval* tv0)
@@ -132,6 +141,9 @@ void my_do_test_all()
 	int i = 0, ignore = 0, active = 0;
 	struct timeval st, et;
 	long cost, total_cost = 0;
+#ifdef MEM_GUARD
+	clear_guard();
+#endif
 	PRINTF_DO_TEST_HEADER();
 	while (suite[i].main != NULL) {
 		if (suite[i].active) {
@@ -141,6 +153,9 @@ void my_do_test_all()
 			gettimeofday(&et, NULL);
 			cost = difftimeval(&et, &st);
 			total_cost += cost;
+#ifdef MEM_GUARD
+			printf_all_ptrs();
+#endif
 			PRINTF_TEST_CASE_TAIL(suite[i].name, cost);
 			active++;
 		} else {

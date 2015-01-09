@@ -64,7 +64,6 @@ int main(int argc, char* argv[])
 
 #ifdef SMTS_TEST
 	my_do_test_all();
-
 #else
 	uv_signal_t sig_int;
 	smts_tcp_server_t *tcp_server = (smts_tcp_server_t*) malloc(sizeof(smts_tcp_server_t));

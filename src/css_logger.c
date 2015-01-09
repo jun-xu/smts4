@@ -8,14 +8,15 @@
 #include "uv/uv.h"
 #include "css_logger.h"
 #include "smts_util.h"
-
+#include "smts_errorno.h"
 /**
  * for mem watch.
  */
 #include "mem_guard.h"
 
-static css_logger_t css_logger = { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-DEFAULT_LOG_HEADER_FMT };
+#include <assert.h>
+
+static css_logger_t css_logger = { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, DEFAULT_LOG_HEADER_FMT };
 static uv_mutex_t css_logger_mutex;
 static uv_once_t init_css_logger_guard_ = UV_ONCE_INIT;
 static char buffers[MAX_LOGGER_BUFFER_LEN][DEFAULT_LOG_BUF_SIZE];
@@ -127,8 +128,9 @@ char* GET_CSS_LOGGER_LEVEL_NAME(int level)
 
 void after_roll_logger_cb(uv_fs_t* req)
 {
-//	printf("close file %s.\n", writer->path);
-	FREE(req->data);	// css_logger_writer_t *writer;
+	css_logger_writer_t *writer = (css_logger_writer_t*) req->data;
+	printf("close file %s.\n", writer->path);
+	FREE(req->data);	//
 	uv_fs_req_cleanup(req);
 	FREE(req);
 }
@@ -144,7 +146,7 @@ void after_write_logger_and_close_cb(uv_fs_t* req)
 	uv_fs_req_cleanup(req);
 	FREE(wreq);
 	FREE(req);
-
+	printf("after_write_logger_and_close_cb close file:%s\n", writer->path);
 	close_req = (uv_fs_t*) malloc(sizeof(uv_fs_t));
 	close_req->data = writer;
 	r = uv_fs_close(css_logger.loop, close_req, writer->fd, after_roll_logger_cb);
@@ -180,6 +182,16 @@ void css_logger_dump_to_file(int is_lock, int should_close)
 	if (!is_lock)
 		LOGGER_UV_MUTEX_LOCK(&css_logger_mutex);
 	if (offset == 0) {
+		if (should_close) {
+			req = (uv_fs_t*) malloc(sizeof(uv_fs_t));
+			req->data = css_logger.writer;
+			ret = uv_fs_close(css_logger.loop, req, css_logger.writer->fd, after_roll_logger_cb);
+			if (ret < 0) {
+				printf("close file:%s error by reason:%s\n", css_logger.writer->path, smts_strerror(ret));
+				FREE(req);
+				FREE(css_logger.writer);
+			}
+		}
 		if (!is_lock)
 			LOGGER_UV_MUTEX_UNLOCK(&css_logger_mutex);
 		return;
@@ -212,6 +224,9 @@ void css_logger_dump_to_file(int is_lock, int should_close)
 		if (ret < 0) {
 			req->data = wreq->writer;
 			ret = uv_fs_close(css_logger.loop, req, wreq->writer->fd, after_roll_logger_cb);
+			if (ret < 0) {
+				FREE(req);
+			}
 			FREE(wreq);
 		}
 		css_logger.writer = NULL;
@@ -332,7 +347,7 @@ int css_logger_new_file()
 		uv_fs_req_cleanup(&req);
 	} else {
 		// set fd to r, start timer and reset r=0 when r >0
-//		printf("open logger %s successful.\n", css_logger.writer->path);
+		printf("open logger %s successful.\n", css_logger.writer->path);
 		css_logger.writer->fd = (uv_file) req.result;
 		uv_fs_req_cleanup(&req);
 		r = 0;
@@ -360,8 +375,10 @@ int css_logger_reopen_file(char *filenames, int len)
 	if (logger_name_t == NULL) {
 		r = css_logger_new_file();
 	} else {
+
 		css_logger.writer = (css_logger_writer_t*) malloc(sizeof(css_logger_writer_t));
 		sprintf(css_logger.writer->path, "%s%s", css_logger.root_dir, logger_name_t);
+		printf("reopen filepath:%s\n", css_logger.writer->path);
 		css_logger.writer->loop = css_logger.loop;
 		r = uv_fs_open(css_logger.loop, &req, css_logger.writer->path,
 		O_RDWR | O_APPEND, S_IWUSR | S_IRUSR, NULL);
@@ -390,8 +407,7 @@ int open_logger_file()
 {
 	int r;
 	uv_fs_t readdir_req;
-	r = uv_fs_scandir(css_logger.loop, &readdir_req, css_logger.root_dir, 0,
-	NULL);
+	r = uv_fs_scandir(css_logger.loop, &readdir_req, css_logger.root_dir, 0, NULL);
 
 	if (r < 0) {
 		printf("list logger dir:%s failed.\n", css_logger.root_dir);
@@ -406,7 +422,7 @@ int open_logger_file()
 		} else {
 			// reopen last logger file.
 			printf("reopen logger file....\n");
-			r = css_logger_reopen_file((char*)readdir_req.ptr, (int) readdir_req.result);
+			r = css_logger_reopen_file((char*) readdir_req.ptr, (int) readdir_req.result);
 			if (r == 0) {
 				css_logger_start_timer();
 			}
@@ -463,8 +479,10 @@ int css_logger_fmt_replace_enter(char **ffmt, char *fmt)
 	size_t len = strlen(fmt);
 	char *tmp, *dest_str, *from_str = fmt;
 	int pos = 0;
-	if ((tmp = strstr(fmt, "\n")) == NULL)
+	if ((tmp = strstr(fmt, "\n")) == NULL) {
+		*ffmt = NULL;
 		return -1;
+	}
 	*ffmt = dest_str = malloc(len + 32);
 	do {
 		pos = tmp - from_str;
@@ -562,15 +580,15 @@ int css_logger_log_inner(char *file, const long line, const char *func, long pid
 		css_logger_gen_format(real_fmt, css_logger.pattern, time_str, file + basename_index, line, func, pid,
 				GET_CSS_LOGGER_LEVEL_NAME(level), fmt);
 #endif
+		va_start(args, fmt);
 		if (!css_logger.no_console) {
 			// printf to console.
-			va_start(args, fmt);
+
 			vprintf(real_fmt, args);
 		}
 		if (css_logger.status == CSS_LOGGER_INIT && !css_logger.no_file && css_logger.writer) {
 			// write to buffer first, dump to file latter.
 			char *tbuffer;
-			va_start(args, fmt);
 			LOGGER_UV_MUTEX_LOCK(&css_logger_mutex);
 			tbuffer = buffer + offset;
 			ret = vsnprintf(tbuffer, DEFAULT_LOG_BUF_SIZE - offset, real_fmt, args);
@@ -592,11 +610,11 @@ int css_logger_log_inner(char *file, const long line, const char *func, long pid
 					css_logger_dump_to_file(1, 0);
 				}
 			}
+
 			LOGGER_UV_MUTEX_UNLOCK(&css_logger_mutex);
 
-		} else {
-			FREE(real_fmt);
 		}
+		FREE(real_fmt);
 		va_end(args);
 		return 0;
 	}
@@ -627,8 +645,8 @@ int css_logger_close()
 		return 0;
 	}
 	if (css_logger.loop) {
-		uv_work_t *req = (uv_work_t*) malloc(sizeof(uv_work_t));
 		if (css_logger.timer != NULL) {
+			uv_work_t *req = (uv_work_t*) malloc(sizeof(uv_work_t));
 			uv_timer_stop(css_logger.timer);
 			printf("stop logger timer.\n");
 			FREE(css_logger.timer);
@@ -652,25 +670,22 @@ int css_logger_destroy()
 	return 0;
 }
 
-#ifdef SMTS_TEST
+//#ifdef SMTS_TEST
 
 #include <assert.h>
-static int mutil_test_count = 20;
+static int mutil_test_count = 200;
 static int mutil_test_clients = 10;
 
 void test_css_logger_gen_fmt()
 {
 	char fmt[256];
-	css_logger_gen_format(fmt, "%d [%p][%P] <%F:%l:%f> - %m", "time",
-			"file", 1, "func",2, "DEBUG","msg");
+	css_logger_gen_format(fmt, "%d [%p][%P] <%F:%l:%f> - %m", "time", "file", 1, "func", 2, "DEBUG", "msg");
 //	printf("fmt:%s\n",fmt);
 	assert(strcmp("time [DEBUG][2] <file:1:func> - msg", fmt) == 0);
-	css_logger_gen_format(fmt, "%d [%p][%P] <%F:%l:%f> %%%%- %m", "time",
-			"file", 1, "func",2, "DEBUG","msg");
+	css_logger_gen_format(fmt, "%d [%p][%P] <%F:%l:%f> %%%%- %m", "time", "file", 1, "func", 2, "DEBUG", "msg");
 //	printf("fmt:%s\n",fmt);
 	assert(strcmp("time [DEBUG][2] <file:1:func> %%%%- msg", fmt) == 0);
-	css_logger_gen_format(fmt, "%d [%p][%P] <%F:%l:%f> %u- %m", "time",
-			"file", 1, "func",2, "DEBUG","msg");
+	css_logger_gen_format(fmt, "%d [%p][%P] <%F:%l:%f> %u- %m", "time", "file", 1, "func", 2, "DEBUG", "msg");
 //	printf("fmt:%s\n",fmt);
 	assert(strcmp("time [DEBUG][2] <file:1:func> - msg", fmt) == 0);
 }
@@ -687,6 +702,7 @@ void test_css_logger_console_log()
 	CL_DEBUG("test logger %s %d.\n", __FUNCTION__, 2);
 	CL_INFO("test logger %s %d.\n", __FUNCTION__, 3);
 	CL_WARN("test logger \n");
+	css_logger_set_level(LL_DEBUG);
 //	printf("%s %d %s.\n",strstr(__FILE__,"src"),__LINE__,__FUNCTION__);
 
 }
@@ -696,9 +712,7 @@ void css_logger_log_cb(uv_work_t* req)
 	int i = 0;
 	time(&timer);
 	for (; i < mutil_test_count; i++) {
-		CL_DEBUG(
-				"log lager  %ld\n",
-				timer);
+		CL_DEBUG("log lager  %ld\n", timer);
 	}
 }
 
@@ -723,11 +737,10 @@ void test_css_logger_mutil()
 	assert(0 == css_logger_init(loop));
 	css_logger_start();
 	css_logger_start();
-	css_logger.no_console = 1;
+	css_logger.no_file = 1;
 	for (i = 0; i < mutil_test_clients; i++) {
 		uv_work_t *work_req = (uv_work_t*) malloc(sizeof(uv_work_t));
-		uv_queue_work(loop, work_req, css_logger_log_cb,
-				css_logger_after_log_cb);
+		uv_queue_work(loop, work_req, css_logger_log_cb, css_logger_after_log_cb);
 	}
 	uv_run(loop, UV_RUN_DEFAULT);
 	assert(0 == css_logger_destroy());
@@ -736,19 +749,22 @@ void test_css_logger_mutil()
 void test_css_logger_fmt_replace_enter()
 {
 	char *fmt;
-	assert(-1 == css_logger_fmt_replace_enter(&fmt,"test."));
-	assert(0 == css_logger_fmt_replace_enter(&fmt,"test\n"));
-	assert(strcmp(fmt,"test\r\n") == 0);
-	assert(0 == css_logger_fmt_replace_enter(&fmt,"te\ns  t\n"));
-	assert(strcmp(fmt,"te\r\ns  t\r\n") == 0);
+	assert(-1 == css_logger_fmt_replace_enter(&fmt, "test."));
+	free(fmt);
+	assert(0 == css_logger_fmt_replace_enter(&fmt, "test\n"));
+	assert(strcmp(fmt, "test\r\n") == 0);
+	free(fmt);
+	assert(0 == css_logger_fmt_replace_enter(&fmt, "te\ns  t\n"));
+	assert(strcmp(fmt, "te\r\ns  t\r\n") == 0);
+	free(fmt);
 }
 
 void test_css_logger_suite()
 {
-	test_css_logger_gen_fmt();
-	test_css_logger_fmt_replace_enter();
-	test_css_logger_console_log();
+//	test_css_logger_gen_fmt();
+//	test_css_logger_fmt_replace_enter();
+//	test_css_logger_console_log();
 	test_css_logger_mutil();
 
 }
-#endif
+//#endif

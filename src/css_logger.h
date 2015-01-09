@@ -15,6 +15,16 @@
 #include <stdarg.h>
 #include "uv/uv.h"
 #include "smts_util.h"
+
+#define CL_RED     "\x1b[31m"
+#define CL_GREEN   "\x1b[32m"
+#define CL_YELLOW  "\x1b[33m"
+#define CL_BLUE    "\x1b[34m"
+#define CL_MAGENTA "\x1b[35m"
+#define CL_CYAN    "\x1b[36m"
+#define CL_RESET   "\x1b[0m"
+
+#define CL_CLR(color, text) CL_##color text CL_RESET
 //#include "css_file_writer.h"
 
 //public API
