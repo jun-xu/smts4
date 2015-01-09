@@ -12,11 +12,11 @@ INCLUDE_DIR = $(ROOT_DIR)include/
 
 # src dir
 SRC_DIR=$(ROOT_DIR)src/
-PROTO_DIR=$(SRC_DIR)protocol/
-COMMON_DIR=$(SRC_DIR)common/
-MOCK_DIR=$(SRC_DIR)mock/
 TEST_DIR=$(ROOT_DIR)test/
-SRC_FILES=$(foreach dir,$(SRC_DIR) $(PROTO_DIR) $(COMMON_DIR) $(MOCK_DIR),$(wildcard $(dir)*.c))
+
+ALL_SRC_DIRS=$(SRC_DIR) $(SRC_DIR)protocol/ $(SRC_DIR)common/ $(SRC_DIR)mock/
+
+SRC_FILES=$(foreach dir,$(ALL_SRC_DIRS),$(wildcard $(dir)*.c))
 # deps dir
 DEPS_ROOT_DIRS = $(ROOT_DIR)deps/
 
@@ -39,10 +39,10 @@ GYP_GIT_ADDR = git@192.168.203.211:gyp.git
 GYP_SOURCE_DEPS_DIR = $(DEPS_ROOT_DIRS)$(GYP_NAME_APP)/
 #--------------------------------------------------------
 
-CXX   =  gcc
-OPTI  = -o2
-CXXFLAGS = -Wall -I. -fPIC -fprofile-arcs -ftest-coverage
-INCPATHS = -I$(SRC_DIR) -I$(INCLUDE_DIR) -I$(PROTO_DIR) -I$(COMMON_DIR) -I$(MOCK_DIR)
+CXX=gcc
+OPTI=-o2
+CXXFLAGS=-Wall -I. -fPIC -fprofile-arcs -ftest-coverage
+INCPATHS=-I$(INCLUDE_DIR) $(foreach dir,$(ALL_SRC_DIRS),-I$(dir))
 LIBS =-l$(LIBUV_NAME_APP)
 
 GIT_SUBMODULES_EXISTED=$(wildcard .gitmodules)
