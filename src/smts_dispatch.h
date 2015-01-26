@@ -25,11 +25,11 @@ int fun_no_impl(abstract_tcp_client_t *client, abstract_cmd_t *abstrct_cmd);
 #define GEN_SWITCH_CASE_3ARGS(_type,_name,_len)
 #define GEN_DISPATCH_FUN(fun) (fun) == NULL?fun_no_impl:(fun)
 
-#define GEN_DISPATCH_SWTICH_CASE(cmd_name,_packet,cmd,_fileds,fun)			\
+#define GEN_DISPATCH_SWTICH_CASE(cmd_name,cmd,_fileds,fun)					\
 case cmd:{																	\
 	cmd_name##_t *t = (cmd_name##_t*)malloc(sizeof(cmd_name##_t));			\
 	r = cmd_name##_t_init(t);												\
-	r = proto_cmd_t_decode(buf,(abstract_cmd_t*)t);						\
+	r = proto_cmd_t_decode(buf,(abstract_cmd_t*)t);							\
 	if(r != 0){																\
 		CL_ERROR("decode packet:%s error.\n",#cmd_name);					\
 	}else{																	\

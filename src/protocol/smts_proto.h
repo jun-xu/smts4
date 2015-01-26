@@ -120,7 +120,7 @@ typedef struct cmd_codec_buf_s{
 
 #define GEN_STRUCT_FILED(type,name)			type##_filed(name)
 #define GEN_STRUCT_3FILED(type,name,arg) 	type##_filed(name,arg)
-#define GEN_STRUCT(cmd_name,_packet,_cmd,fileds,_fun)					\
+#define GEN_STRUCT(cmd_name,_cmd,fileds,_fun)						\
 typedef struct cmd_name##_s{											\
 	char 				*name;	/*private*/								\
 	/** private*/														\
@@ -138,7 +138,7 @@ PROTOCOL_MAP(GEN_STRUCT, GEN_STRUCT_FILED, GEN_STRUCT_3FILED);
  */
 #define GEN_STRUCT_FILED_METHOD(type,name)
 #define GEN_STRUCT_3FILED_METHOD(type,name,len)
-#define GEN_STRUCT_METHOD(cmd_name,_packet,cmd,fileds,_fun)			\
+#define GEN_STRUCT_METHOD(cmd_name,cmd,fileds,_fun)					\
 int cmd_name##_t_init(cmd_name##_t *t);								\
 
 PROTOCOL_MAP(GEN_STRUCT_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILED_METHOD)

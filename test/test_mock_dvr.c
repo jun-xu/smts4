@@ -25,7 +25,7 @@
 
 int init_test_mock_dvr(test_mock_dvr_t *dvr, uv_loop_t *loop)
 {
-	init_abstract_tcp_client((abstract_tcp_client_t*) dvr, loop, PACK4);
+	init_abstract_tcp_client((abstract_tcp_client_t*) dvr, loop);
 	dvr->iframe_bin.base = NULL;
 	dvr->iframe_bin.len = 0;
 	dvr->frame_bin.base = NULL;

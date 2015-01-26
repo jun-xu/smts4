@@ -25,7 +25,7 @@
 static int test_client_on_read_packet(abstract_tcp_client_t *client, uv_buf_t *packet, int status);
 static int init_test_smts_client(uv_loop_t *loop, test_smts_client_t *client)
 {
-	init_abstract_tcp_client((abstract_tcp_client_t*) client, loop, PACK0);
+	init_abstract_tcp_client((abstract_tcp_client_t*) client, loop);
 	client->cur_frame_seq = -1;
 	client->status = 0;
 	client->recv_frame_account = 0;
@@ -161,8 +161,7 @@ int test_smts_start_preivew(uv_loop_t *loop, test_smts_client_t *client, int64_t
 // 1. connect to server.
 	assert(0 == init_test_smts_client(loop, client));
 	client->dvr_id = dvr_id;
-	r = tcp_client_connect((abstract_tcp_client_t*) client, "127.0.0.1", DEFAUTL_LISTEN_PORT, test_client_on_connected,
-	PACK0);
+	r = tcp_client_connect((abstract_tcp_client_t*) client, "127.0.0.1", DEFAUTL_LISTEN_PORT, test_client_on_connected);
 	return r;
 }
 

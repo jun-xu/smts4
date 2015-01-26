@@ -21,7 +21,7 @@
 /**
  * declare public API methods
  */
-#define GEN_STRUCT_STATIC_METHOD(cmd_name,_packet,cmd,fileds,_fun)			\
+#define GEN_STRUCT_STATIC_METHOD(cmd_name,cmd,fileds,_fun)					\
 static int cmd_name##_t_len(abstract_cmd_t *t);								\
 static int cmd_name##_t_decode(uv_buf_t *packet,abstract_cmd_t *t);			\
 static int cmd_name##_t_encode(abstract_cmd_t *t);							\
@@ -41,7 +41,7 @@ PROTOCOL_MAP(GEN_STRUCT_STATIC_METHOD, GEN_STRUCT_FILED_METHOD, GEN_STRUCT_3FILE
 
 #define GEN_STRUCT_ARGS_INIT(type,name)			type##_init(name)
 #define GEN_STRUCT_3ARGS_INIT(type,name,length)	type##_init(name,length)
-#define GEN_STRUCT_INIT(cmd_name,_packet,pcmd,fileds,_fun)		\
+#define GEN_STRUCT_INIT(cmd_name,pcmd,fileds,_fun)				\
 int cmd_name##_t_init(cmd_name##_t *t){							\
 	t->name = #cmd_name;										\
 	t->cmd = pcmd;												\
@@ -74,7 +74,7 @@ PROTOCOL_MAP(GEN_STRUCT_INIT, GEN_STRUCT_ARGS_INIT, GEN_STRUCT_3ARGS_INIT);
 
 #define GEN_STRUCT_ARGS_LEN(type,name)			type##_len(name)
 #define GEN_STRUCT_3ARGS_LEN(type,name,length)	type##_len(name,length)
-#define GEN_STRUCT_LEN(cmd_name,_packet,cmd,fileds,_fun)		\
+#define GEN_STRUCT_LEN(cmd_name,cmd,fileds,_fun)				\
 int cmd_name##_t_len(abstract_cmd_t *at){						\
 	cmd_name##_t *t = (cmd_name##_t*)at;						\
 	int len = 0;												\
@@ -96,7 +96,7 @@ PROTOCOL_MAP(GEN_STRUCT_LEN, GEN_STRUCT_ARGS_LEN, GEN_STRUCT_3ARGS_LEN);
 
 #define GEN_STRUCT_ARGS_DECODE(type,name)		type##_decode(name)
 #define GEN_STRUCT_3ARGS_DECODE(type,name,arg)	type##_decode(name,arg)
-#define GEN_STRUCT_DECODE(cmd_name,packet,cmd,fileds,_fun)					\
+#define GEN_STRUCT_DECODE(cmd_name,cmd,fileds,_fun)							\
 int cmd_name##_t_decode(uv_buf_t *packet_buf,abstract_cmd_t *at){			\
 	cmd_name##_t *t = (cmd_name##_t*)at;									\
 	char *buf = packet_buf->base;											\
@@ -106,10 +106,8 @@ int cmd_name##_t_decode(uv_buf_t *packet_buf,abstract_cmd_t *at){			\
 	t->codec_buf.original_buf->base = packet_buf->base;						\
 	t->codec_buf.original_buf->len = packet_buf->len;						\
 	t->codec_buf.original_buf_len = 1;										\
-	t->packet_len += packet;												\
 	return 0;																\
 }
-
 PROTOCOL_MAP(GEN_STRUCT_DECODE, GEN_STRUCT_ARGS_DECODE, GEN_STRUCT_3ARGS_DECODE);
 
 /**
@@ -130,7 +128,7 @@ PROTOCOL_MAP(GEN_STRUCT_DECODE, GEN_STRUCT_ARGS_DECODE, GEN_STRUCT_3ARGS_DECODE)
 
 #define GEN_STRUCT_ARGS_INNER_ALLOC(type,name)		type##_inner_alloc(name)
 #define GEN_STRUCT_3ARGS_INNER_ALLOC(type,name,arg)	type##_inner_alloc(name,arg)
-#define GEN_STRUCT_BUFS_INNER_ALLOC(cmd_name,_packet,pcmd,fileds,_fun)				\
+#define GEN_STRUCT_BUFS_INNER_ALLOC(cmd_name,pcmd,fileds,_fun)						\
 static int cmd_name##_t_bufs_inner_alloc(cmd_name##_t *t){							\
 	int is_first=1,is_new=1,buf_size = 0,index=0;									\
 	uv_buf_t *buf;																	\
@@ -155,7 +153,7 @@ PROTOCOL_MAP(GEN_STRUCT_BUFS_INNER_ALLOC, GEN_STRUCT_ARGS_INNER_ALLOC, GEN_STRUC
 
 #define GEN_STRUCT_ARGS_ALLOC(type,name)		type##_alloc(name)
 #define GEN_STRUCT_3ARGS_ALLOC(type,name,arg)	type##_alloc(name,arg)
-#define GEN_STRUCT_BUFS_ALLOC(cmd_name,_packet,pcmd,fileds,_fun)				\
+#define GEN_STRUCT_BUFS_ALLOC(cmd_name,pcmd,fileds,_fun)						\
 static int cmd_name##_t_bufs_alloc(cmd_name##_t *t){							\
 	int buf_len = 0,is_new = 1,buf_size = 0,i=0;								\
 	fileds																		\
@@ -189,17 +187,16 @@ PROTOCOL_MAP(GEN_STRUCT_BUFS_ALLOC, GEN_STRUCT_ARGS_ALLOC, GEN_STRUCT_3ARGS_ALLO
 
 #define GEN_STRUCT_ARGS_ENCODE(type,name)		type##_encode(name)
 #define GEN_STRUCT_3ARGS_ENCODE(type,name,arg)	type##_encode(name,arg)
-#define GEN_STRUCT_ENCODE(cmd_name,packet_opt,pcmd,fileds,_fun)				\
+#define GEN_STRUCT_ENCODE(cmd_name,pcmd,fileds,_fun)						\
 int cmd_name##_t_encode(abstract_cmd_t *at){								\
 	cmd_name##_t *t=(cmd_name##_t*)at;										\
 	int offset = 0,is_new=1;												\
 	int r = cmd_name##_t_bufs_alloc(t);										\
 	uv_buf_t *packet = t->codec_buf.original_buf;							\
 	char *buf;																\
-	t->packet_len = cmd_name##_t_len((abstract_cmd_t*)t) - packet_opt;		\
+	t->packet_len = cmd_name##_t_len((abstract_cmd_t*)t);					\
 	t->cmd = pcmd;															\
 	fileds																	\
-	t->packet_len += packet_opt;											\
 	t->ref = 0;																\
 	return 0;																\
 }
@@ -219,7 +216,7 @@ PROTOCOL_MAP(GEN_STRUCT_ENCODE, GEN_STRUCT_ARGS_ENCODE, GEN_STRUCT_3ARGS_ENCODE)
 
 #define GEN_STRUCT_ARGS_DESTROY(type,name)			type##_destroy(name)
 #define GEN_STRUCT_3ARGS_DESTROY(type,name,length)	type##_destroy(name,length)
-#define GEN_STRUCT_DESTROY(cmd_name,_packet,cmd,fileds,_fun)					\
+#define GEN_STRUCT_DESTROY(cmd_name,cmd,fileds,_fun)							\
 int cmd_name##_t_destroy(abstract_cmd_t *at){									\
 	cmd_name##_t *t=(cmd_name##_t*)at;											\
 	if(t->ref > 0) {t->ref --;return 0;};										\

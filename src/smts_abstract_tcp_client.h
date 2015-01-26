@@ -57,7 +57,6 @@ typedef struct
 		uv_loop_t *loop; /* private. uv loop. init by {@link init_smts_dvr_client}*/  	\
 		uv_tcp_t socket; /* private. socket. init by {@link init_smts_dvr_client}*/  	\
 		struct sockaddr_in addr; /* private */											\
-		int32_t packet_opt;	/* packet size. 0 for nvmp proto or 4 for erlang server.*/	\
 		client_read_tmp_buf_t recv_tmp_buf; /* private. buf for read frame.*/			\
 		tcp_client_read_packet_cb read_packet_cb;/*private. callback function when read package.used in method:{@link tcp_client_start_read}*/\
 		tcp_client_close_cb close_cb;/*callback when close tcp client.*/				\
@@ -91,7 +90,7 @@ typedef struct client_connect_req_s
 	tcp_client_connect_cb cb;		/// on tcp client connected.
 } client_connect_req_t;
 
-int init_abstract_tcp_client(abstract_tcp_client_t *client, uv_loop_t *loop, int pack_opt);
+int init_abstract_tcp_client(abstract_tcp_client_t *client, uv_loop_t *loop);
 
 int close_abstract_tcp_client(abstract_tcp_client_t *client, tcp_client_close_cb close_cb);
 
@@ -104,11 +103,9 @@ void destroy_client_read_tmp_buf(client_read_tmp_buf_t *buf);
  * @param ip ip
  * @param port
  * @connect_cb	 callback when connected.
- * @packet_opt  0 or 4.
  * @return 0:ok, other:errorcode
  */
-int tcp_client_connect(abstract_tcp_client_t *client, char *ip, int32_t port, tcp_client_connect_cb connect_cb,
-		int packet_opt);
+int tcp_client_connect(abstract_tcp_client_t *client, char *ip, int32_t port, tcp_client_connect_cb connect_cb);
 /**
  * start read package from client socket.
  * @param client tcp client

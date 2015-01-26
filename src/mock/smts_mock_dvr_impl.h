@@ -60,7 +60,7 @@ int init_smts_dvr_client(smts_dvr_client_t *dvr_client, uv_loop_t *loop, int64_t
  * connect to dvr. and callback to session.
  * @return 0:ok. other:errorcode.
  */
-int smts_dvr_client_connect(smts_dvr_client_t *dvr_client, int packet_opt);
+int smts_dvr_client_connect(smts_dvr_client_t *dvr_client);
 /**
  * session call after connect to dvr successful.
  * send preview cmd to dvr, and callback to session.

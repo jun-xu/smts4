@@ -18,12 +18,11 @@
  */
 #include "mem_guard.h"
 
-int init_abstract_tcp_client(abstract_tcp_client_t *client, uv_loop_t *loop, int pack_opt)
+int init_abstract_tcp_client(abstract_tcp_client_t *client, uv_loop_t *loop)
 {
 	client->socket.data = client;
 	client->read_packet_cb = NULL;
 	client->close_cb = NULL;
-	client->packet_opt = pack_opt;
 	client->loop = loop;
 	uv_tcp_init(loop, &client->socket);
 	init_client_read_tmp_buf(&client->recv_tmp_buf);
@@ -96,8 +95,8 @@ static void tcp_client_alloc_cb(uv_handle_t* handle, size_t size, uv_buf_t* buf)
 			buf->base = (char*) &packet->packet_len + packet->offset;
 			buf->len = PACKET_LEN_FIELD_SIZE - packet->offset;
 		} else if (packet->offset == PACKET_LEN_FIELD_SIZE) {
-			// read packet body. packet_len should +4 when read from mock dvr which write by erlang.
-			int32_t packet_len = decode_int32(buf->base) + client->packet_opt;
+			// read packet body.
+			int32_t packet_len = decode_int32(buf->base);
 			if (packet_len <= PACKET_LEN_FIELD_SIZE || packet_len > MAX_PACKET_LEN) {
 				// packet invalid, close handle in read_cb.
 				CL_ERROR("invalide packet len:%d.\n", packet_len);
@@ -193,14 +192,12 @@ void on_tcp_client_connect_cb(uv_connect_t* req, int status)
 	FREE(creq);
 }
 
-int tcp_client_connect(abstract_tcp_client_t *client, char *ip, int32_t port, tcp_client_connect_cb connect_cb,
-		int packet_opt)
+int tcp_client_connect(abstract_tcp_client_t *client, char *ip, int32_t port, tcp_client_connect_cb connect_cb)
 {
 	int r = 0;
 	char *local_ip;
 	client_connect_req_t *req = (client_connect_req_t*) malloc(sizeof(client_connect_req_t));
 	struct sockaddr_in addr;
-	client->packet_opt = packet_opt;
 	r = uv_tcp_init(client->loop, &client->socket);
 	local_ip = smts_get_one_addrs();
 	if (local_ip == NULL) {

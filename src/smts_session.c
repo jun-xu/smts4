@@ -261,7 +261,7 @@ int media_client_start_preview(smts_client_t* client, play_cmd_t *play)
 			goto init_session_error;
 		}
 		// preview.4. connect to dvr.
-		r = smts_dvr_client_connect(&s->dvr, PACK4);
+		r = smts_dvr_client_connect(&s->dvr);
 		// callback when dvr client connected. method: when_smts_dvr_client_connected(int status).
 		if (r != 0) {
 			CL_ERROR("connect to dvr error:%d.\n", r);

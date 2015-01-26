@@ -29,7 +29,7 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		smts_frame_t *frame = (smts_frame_t*) malloc(sizeof(smts_frame_t));
 		mock_dvr_frame_t *dvr_frame = (mock_dvr_frame_t*) malloc(sizeof(mock_dvr_frame_t));
 		mock_dvr_frame_t_init(dvr_frame);
-		proto_cmd_t_decode(buf, (abstract_cmd_t*)dvr_frame);
+		proto_cmd_t_decode(buf, (abstract_cmd_t*) dvr_frame);
 		frame->data = dvr_frame;
 		frame->frame_data.base = dvr_frame->frame.base;
 		frame->frame_data.len = dvr_frame->frame.len;
@@ -38,8 +38,8 @@ int on_dvr_client_read_frame_cb(abstract_tcp_client_t *aclient, uv_buf_t *buf, i
 		frame->st = dvr_frame->st;
 //		CL_DEBUG("dvr client recv frame:%d,%d\n", frame->seqno, frame->type);
 		///increase ref.
-		proto_cmd_t_increase_ref((abstract_cmd_t*)dvr_frame);
-		proto_cmd_t_destroy((abstract_cmd_t*)dvr_frame);
+		proto_cmd_t_increase_ref((abstract_cmd_t*) dvr_frame);
+		proto_cmd_t_destroy((abstract_cmd_t*) dvr_frame);
 		on_smts_dvr_client_recv_frame(c->session, frame, 0);
 	} else {
 		CL_ERROR("read frame error:%d,%s\n", status, smts_strerror(status));
@@ -59,7 +59,7 @@ int init_smts_dvr_client(smts_dvr_client_t *dvr_client, uv_loop_t *loop, int64_t
 	if (r != 0) {
 		return r;
 	}
-	r = init_abstract_tcp_client((abstract_tcp_client_t*) dvr_client, loop, PACK4);
+	r = init_abstract_tcp_client((abstract_tcp_client_t*) dvr_client, loop);
 
 	r = uv_ip4_addr(dvr_client->dvr_info.ip, dvr_client->dvr_info.port, &dvr_client->addr);
 	if (r != 0) {
@@ -80,12 +80,12 @@ void connected_dvr_cb(abstract_tcp_client_t *client, int status)
 	on_connected_to_dvr(dvr_client->session, client, status);
 }
 
-int smts_dvr_client_connect(smts_dvr_client_t *dvr_client, int packet_opt)
+int smts_dvr_client_connect(smts_dvr_client_t *dvr_client)
 {
 	/// 1. conncet to dvr.
 	int r = 0;
 	r = tcp_client_connect((abstract_tcp_client_t *) dvr_client, dvr_client->dvr_info.ip, dvr_client->dvr_info.port,
-			connected_dvr_cb, packet_opt);
+			connected_dvr_cb);
 	return r;
 }
 /**
@@ -112,7 +112,7 @@ int smts_dvr_client_preview(smts_dvr_client_t *dvr_client)
 	preview_packet->bitrate = DEFAULT_DVR_BITRATE;
 	preview_packet->frame_rate = DEFAULT_DVR_FRAMERATE;
 
-	r = proto_cmd_t_encode((abstract_cmd_t*)preview_packet);
+	r = proto_cmd_t_encode((abstract_cmd_t*) preview_packet);
 	/// 3. send preview msg.
 	r = tcp_client_send_msg((abstract_tcp_client_t*) dvr_client, (abstract_cmd_t*) preview_packet,
 			on_dvr_client_send_preview_msg_cb);

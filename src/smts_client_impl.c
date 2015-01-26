@@ -52,7 +52,7 @@ int stop_smts_client(smts_client_t *c, int status)
  */
 static void init_smts_client(smts_client_t *smts_client, uv_loop_t *loop)
 {
-	init_abstract_tcp_client((abstract_tcp_client_t*) smts_client, loop, PACK0);
+	init_abstract_tcp_client((abstract_tcp_client_t*) smts_client, loop);
 	QUEUE_INIT(&smts_client->queue);
 	smts_client->session = NULL;
 	smts_client->status = SMTS_CLIENT_ON_INIT;
