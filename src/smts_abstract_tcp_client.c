@@ -80,8 +80,8 @@ int tcp_client_send_msg(abstract_tcp_client_t *client, abstract_cmd_t *packet, t
 	send_req->abstract_cmd = packet;
 	send_req->req.data = send_req;
 	send_req->cb = cb;
-	return uv_write(&send_req->req, (uv_stream_t*) &client->socket, packet->original_buf, packet->original_buf_len,
-			tcp_client_send_msg_cb);
+	return uv_write(&send_req->req, (uv_stream_t*) &client->socket, packet->codec_buf.original_buf,
+			packet->codec_buf.original_buf_len, tcp_client_send_msg_cb);
 }
 /**
  * inherit from {@link uv_alloc_cb}

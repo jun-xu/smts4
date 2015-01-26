@@ -188,10 +188,10 @@ void test_struct_encode_decode_suite()
 
 	assert(0 == preview_cmd_t_init(req0));
 	assert(0 == proto_cmd_t_encode((abstract_cmd_t* )req));
-	assert(1 == req->original_buf_len);
-	packet = req->original_buf;
-	req->original_buf = NULL;
-	req->original_buf_len = 0;
+	assert(1 == req->codec_buf.original_buf_len);
+	packet = req->codec_buf.original_buf;
+	req->codec_buf.original_buf = NULL;
+	req->codec_buf.original_buf_len = 0;
 	assert(0 == proto_cmd_t_decode(packet, (abstract_cmd_t* )req0));
 	assert(req0->packet_len == req->packet_len);
 	assert(req0->cmd == req->cmd);

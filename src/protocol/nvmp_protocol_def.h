@@ -9,81 +9,19 @@
 
 #include "uv/uv.h"
 
-/** protocol define.
- *
- * PROTOCOL_MAP format:
- * @code
- * 	T( packet_name, packet, cmd,  fileds, fun)	=>
- * 			struct packet_name##_s{char *name,				//private
- * 								  ...,						// defined by user
- * 								  uv_buf_t original_buf;	//private
- * 								  }packet_name##_t;
- * 			int cmd_name##_t_init();
- * 			int cmd_name##_t_len();
- *			int cmd_name##_decode(uv_buf_t *packet,cmd_name##_t *t);
- *			int cmd_name##_encode(cmd_name##_t *t,uv_buf_t *packet);
- *			int cmd_name##_t_destroy();
- *
- *	packet_name : 	the name of packet.
- *	packet :  		PACK0 or PACK4.  	PACK0: packet_len contain self 4 byte.
- *										PACK4: packet_len NOT contain self 4 byte.
- *	cmd: 			cmd. int32_t
- *	fileds:			use defined fileds.
- *	fun: 			callback function when recv cmd.
- * @endcode
- *  all fun use by {@link smts_dispatch::dispatch_packet}
- *
- *
- * @code
- *		macro			|			mean
- * 	----------------------------------------------------------------
- * 	PROTOCOL_HEAD_FILED		packet header  20byte of nvmp protocol.
- * 		T					struct define
- * 		ARG2				type-name format. 		like: ARG2(type,name)
- * 		ARG3				type-name-arg format. 	like: ARG3(type,name,arg)
- *
- * 	all of protocol struct&&method defined in {@link nvmp_protocol.h}.
- * @endcode
- *
- *
- *	fileds types and methods:
- *	@code
- * 	type_alise	|	type		|	encode_method	   |	decode_metod
- * 	-----------------------------------------------------------------
- * 	Int32			int32_t			encode_int32			decode_int32
- * 	Int16			int16_t			encode_int32			decode_int32
- * 	Int64			int64_t			encode_int32			decode_int32
- * 	FixedString		uv_buf_t		encode_fixed_string		decode_fixed_string
- * 	BinaryBuf		uv_buf_t		encode_binary_buf		decode_binary_buf		//deep copy data to binaryBuf.
- * 	BinaryBufRef	uv_buf_t		other					other			//ref data to buf.not free in destroy method.
- *
- * @endcode
- *	all of encode decode methods in {@link encode_decode_util.h}
- *
- * @code
- * 		method						|					mean
- * 	-------------------------------------------------------------------
- * 	int cmd_name##_t_init(cmd_name##_t *t)
- *	int proto_cmd_t_len(abstract_cmd_t *t)						calculate total length of struct cmd_name##_t;
- *	int proto_cmd_t_decode(uv_buf_t *packet,abstract_cmd_t *t)	decode cmd_name##_t from uv_buf_t.
- *	int proto_cmd_t_encode(abstract_cmd_t *t,uv_buf_t *packet)	encode cmd_name##_t to uv_buf_t.
- *	int proto_cmd_t_destroy(abstract_cmd_t *t)					destory cmd_name##_t.
- * @endcode
- * 	all of protocol method implement in {@link smts_proto.h}.
- */
 #define SMTS_PROTO_DEFINE
+//
+//#define PACK0	0
+//#define PACK4	4
 
-#define PACK0	0
-#define PACK4	4
 
-
-#define PREVIEW_CMD 0x00050104
+#define PREVIEW_CMD 	0x00050104
 #define PREVIEW_RES_CMD 0x80050101
-#define SEND_FRAME_CMD 0x80050102
-#define COMMON_RES_CMD 0x80000001
+#define SEND_FRAME_CMD 	0x80050102
+#define COMMON_RES_CMD 	0x80000001
 
 #define PROTOCOL_TOP_FILED(ARG2)					\
-	/* packet length */								\
+	/* total packet length */						\
 	ARG2(Int32,packet_len)							\
 	ARG2(Int32,cmd)									\
 
